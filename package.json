@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "build:test": "tsc --build ./tests/tsconfig.json",
-    "test": "TS_NODE_PROJECT=tests node -r tsconfig-paths/register --test"
+    "test": "TS_NODE_PROJECT=tests node -r tsconfig-paths/register --test",
+    "lint": "eslint '**/*.ts'",
+    "lint:fix": "npm run lint -- --fix"
   },
   "repository": {
     "type": "git",
@@ -19,9 +21,12 @@
   },
   "homepage": "https://github.com/ckbox-io/migration-tool#readme",
   "devDependencies": {
+    "@eslint/js": "^9.7.0",
+    "@types/eslint__js": "^8.42.3",
     "@types/node": "20.14.11",
+    "eslint": "^8.57.0",
     "tsconfig-paths": "3.9.0",
-    "typescript": "5.5.4",
-    "typescript-transform-paths": "^3.4.7"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^7.17.0"
   }
 }

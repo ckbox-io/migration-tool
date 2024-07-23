@@ -9,9 +9,6 @@
       "@src/*": ["../dist/*"]
     }
   },
-  "plugins": [
-	{ "transform": "typescript-transform-paths" }
-  ],
   "include": [
     "**/*",
     "../src/@types/*"
