@@ -1,0 +1,27 @@
+{
+  "name": "ckbox-migration-tool",
+  "version": "1.0.0",
+  "description": "CLI tool for migrating assets to CKBox",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:test": "tsc --build ./tests/tsconfig.json",
+    "test": "TS_NODE_PROJECT=tests node -r tsconfig-paths/register --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ckbox-io/migration-tool.git"
+  },
+  "author": "CKSource",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ckbox-io/migration-tool/issues"
+  },
+  "homepage": "https://github.com/ckbox-io/migration-tool#readme",
+  "devDependencies": {
+    "@types/node": "20.14.11",
+    "tsconfig-paths": "3.9.0",
+    "typescript": "5.5.4",
+    "typescript-transform-paths": "^3.4.7"
+  }
+}
