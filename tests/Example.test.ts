@@ -1,3 +1,7 @@
+/*
+ Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
+ */
+
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
