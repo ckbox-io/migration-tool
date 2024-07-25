@@ -2,8 +2,8 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { Type } from "class-transformer";
-import { IsBoolean, IsDefined, IsString, ValidateNested } from "class-validator";
+import { Type } from 'class-transformer';
+import { IsBoolean, IsDefined, IsString, ValidateNested } from 'class-validator';
 
 export class CKFinderInitResponse {
 	@ValidateNested()
