@@ -4,7 +4,9 @@
   "description": "CLI tool for migrating assets to CKBox",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:migrator && npm run build:adapters && npm run build:test",
+    "build:migrator": "tsc",
+    "build:adapters": "tsc --build ./adapters/tsconfig.json",
     "build:test": "tsc --build ./tests/tsconfig.json",
     "test": "TS_NODE_PROJECT=tests node -r tsconfig-paths/register --test",
     "lint": "eslint '**/*.ts'",
@@ -21,12 +23,24 @@
   },
   "homepage": "https://github.com/ckbox-io/migration-tool#readme",
   "devDependencies": {
-    "@eslint/js": "^9.7.0",
-    "@types/eslint__js": "^8.42.3",
+    "@eslint/js": "9.7.0",
+    "@types/eslint__js": "8.42.3",
     "@types/node": "20.14.11",
-    "eslint": "^8.57.0",
+    "@types/node-fetch": "^2.6.11",
+    "eslint": "8.57.0",
     "tsconfig-paths": "3.9.0",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^7.17.0"
+    "typescript": "5.5.4",
+    "typescript-eslint": "7.17.0"
+  },
+  "dependencies": {
+    "chalk": "4.1.2",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.1",
+    "node-fetch": "^2.7.0",
+    "ora": "8.0.1",
+    "reflect-metadata": "0.2.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
