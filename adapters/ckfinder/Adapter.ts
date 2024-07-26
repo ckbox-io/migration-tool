@@ -88,7 +88,7 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		const response: Response = await fetch( url, { headers: this.config.authentication.headers } );
 
 		if ( !response.ok ) {
-			throw new Error( `Failed to fetch data from ${ url }. Status ${ response.status } ${ response.statusText }.` );
+			throw new Error( `Failed to fetch data from ${ url }. Status ${ response.status }. ${ await response.text() }` );
 		}
 
 		const plainResponse: unknown = await response.json();

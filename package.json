@@ -8,7 +8,7 @@
     "build:migrator": "tsc",
     "build:adapters": "tsc --build ./adapters/tsconfig.json",
     "build:test": "tsc --build ./tests/tsconfig.json",
-    "test": "TS_NODE_PROJECT=tests node -r tsconfig-paths/register --test",
+    "test": "TS_NODE_PROJECT=tests node -r tsconfig-paths/register --enable-source-maps --test",
     "lint": "eslint '**/*.ts'",
     "lint:fix": "npm run lint -- --fix"
   },

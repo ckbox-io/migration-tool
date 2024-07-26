@@ -5,6 +5,8 @@
     "outDir": "../dist-tests",
     "baseUrl": ".",
     "paths": {
+      "@adapters": ["../dist-adapters"],
+      "@adapters/*": ["../dist-adapters/*"],
       "@src": ["../dist"],
       "@src/*": ["../dist/*"]
     }
