@@ -16,22 +16,22 @@ import path from 'path';
 export default class CKFinderAdapter implements ISourceStorageAdapter {
 	readonly name: string = 'CKFinder';
 
-	private config: CKFinderConfig;
+	private _config: CKFinderConfig;
 
 	public async loadConfig( plainConfig: Record<string, unknown> ): Promise<void> {
-		this.config = plainToInstance( CKFinderConfig, plainConfig );
+		this._config = plainToInstance( CKFinderConfig, plainConfig );
 
-		await validateOrReject( this.config );
+		await validateOrReject( this._config );
 	}
 
 	public async verifyConnection(): Promise<void> {
 		const response: Response = await fetch(
-			`${ this.config.connectorPath }?command=Init`,
-			{ headers: this.config.authentication.headers }
+			`${ this._config.connectorPath }?command=Init`,
+			{ headers: this._config.authentication.headers }
 		);
 
 		if ( !response.ok ) {
-			throw new Error( `Failed to connect to the CKFinder connector at ${this.config.connectorPath}.` );
+			throw new Error( `Failed to connect to the CKFinder connector at ${this._config.connectorPath}.` );
 		}
 	}
 
@@ -84,8 +84,8 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 
 	private async _fetch<T extends object>( parameters: Record<string, string>, responseType: new () => T ): Promise<T> {
 		const params: string = new URLSearchParams( parameters ).toString();
-		const url: string = `${ this.config.connectorPath }?${ params }`;
-		const response: Response = await fetch( url, { headers: this.config.authentication.headers } );
+		const url: string = `${ this._config.connectorPath }?${ params }`;
+		const response: Response = await fetch( url, { headers: this._config.authentication.headers } );
 
 		if ( !response.ok ) {
 			throw new Error( `Failed to fetch data from ${ url }. Status ${ response.status }. ${ await response.text() }` );
