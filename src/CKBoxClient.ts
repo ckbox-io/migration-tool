@@ -5,6 +5,7 @@
 import jwt from 'jsonwebtoken';
 
 import { CKBoxConfig } from './Config';
+import { blob } from 'node:stream/consumers';
 
 export interface ICBoxClient {
 	verifyConnection(): Promise<void>;
@@ -13,7 +14,7 @@ export interface ICBoxClient {
 
 	createFolder( folder: ICKBoxFolder ): Promise<string>;
 
-	uploadAsset( location: ICKBoxLocation, stream: NodeJS.ReadableStream ): Promise<string>;
+	uploadAsset( asset: ICKBoxAsset ): Promise<string>;
 }
 
 export interface ICKBoxCategory {
@@ -29,6 +30,13 @@ export interface ICKBoxFolder {
 export interface ICKBoxLocation {
 	categoryId?: string;
 	folderId?: string;
+}
+
+export interface ICKBoxAsset {
+	name: string;
+	location: ICKBoxLocation;
+	size: number;
+	stream: NodeJS.ReadableStream;
 }
 
 export default class CKBoxClient implements ICBoxClient {
@@ -53,7 +61,6 @@ export default class CKBoxClient implements ICBoxClient {
 	}
 
 	public async verifyConnection(): Promise<void> {
-		// TODO: Check a different endpoint to verify workspace connection.
 		const response: Response = await fetch(
 			`${ this._config.serviceOrigin }/categories`,
 			{ headers: { Authorization: this._token } }
@@ -68,14 +75,90 @@ export default class CKBoxClient implements ICBoxClient {
 	}
 
 	public async createCategory( category: ICKBoxCategory ): Promise<string> {
-		throw new Error( 'TODO: Not implemented' );
+		const response: Response = await this._fetch( 'POST', '/admin/categories', {
+			name: category.name,
+			extensions: category.allowedExtensions
+		} );
+
+		if ( !response.ok ) {
+			throw new Error(
+				`Failed to create category in CKBox. Status code: ${ response.status }. ${ await response.text() }`
+			);
+		}
+
+		return ( await response.json() as { id: string } ).id;
 	}
 
 	public async createFolder( folder: ICKBoxFolder ): Promise<string> {
-		throw new Error( 'TODO: Not implemented' );
+		const response: Response = await this._fetch( 'POST', '/folders', {
+			name: folder.name,
+			categoryId: folder.location.categoryId,
+			parentId: folder.location.folderId
+		} );
+
+		if ( !response.ok ) {
+			throw new Error(
+				`Failed to create folder in CKBox. Status code: ${ response.status }. ${ await response.text() }`
+			);
+		}
+
+		return ( await response.json() as { id: string } ).id;
 	}
 
-	public async  uploadAsset( target: ICKBoxLocation, stream: NodeJS.ReadableStream ): Promise<string> {
-		throw new Error( 'TODO: Not implemented' );
+	public async uploadAsset( asset: ICKBoxAsset ): Promise<string> {
+		const { name: filename, location: target, stream } = asset;
+
+		const formData = new FormData();
+
+		if ( target.categoryId ) {
+			formData.append( 'categoryId', target.categoryId );
+		}
+
+		if ( target.folderId ) {
+			formData.append( 'folderId', target.folderId );
+		}
+
+		const blobStream: Blob = await blob( stream );
+
+		formData.append( 'file', blobStream, filename );
+
+		const response: Response = await this._fetch( 'POST', '/assets', formData );
+
+		if ( !response.ok ) {
+			throw new Error(
+				`Failed to upload asset to CKBox. Status code: ${ response.status }. ${ await response.text() }`
+			);
+		}
+
+		return ( await response.json() as { id: string } ).id;
+	}
+
+	private async _fetch(
+		method: 'GET' | 'POST' | 'DELETE',
+		path: string,
+		body?: Record<string, unknown> | FormData
+	): Promise<Response> {
+		return await fetch(
+			`${ this._config.serviceOrigin }${ path }`,
+			{
+				method,
+				body: this._formatBody( body ),
+				headers: {
+					Authorization: this._token
+				}
+			}
+		);
+	}
+
+	private _formatBody( body?: Record<string, unknown> | FormData ): string | FormData | undefined {
+		if ( !body ) {
+			return undefined;
+		}
+
+		if ( body instanceof FormData ) {
+			return body;
+		}
+
+		return JSON.stringify( body );
 	}
 }

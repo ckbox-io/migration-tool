@@ -11,25 +11,26 @@ import jwt from 'jsonwebtoken';
 
 import { CKBoxConfig } from '@src/Config';
 import CKBoxClient from '@src/CKBoxClient';
+import { Readable } from 'node:stream';
 
 const CKBOX_API_ORIGIN: string | undefined = process.env.CKBOX_API_ORIGIN;
 const CKBOX_API_SECRET: string | undefined = process.env.CKBOX_API_SECRET;
 const CKBOX_API_ENVIRONMENT_ID: string | undefined = process.env.CKBOX_API_ENVIRONMENT_ID;
 
 describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
+	let _workspaceId: string;
+
+	before( async () => {
+		const response: Response = await _ckboxAPICall( 'POST', '/superadmin/workspaces', { name: 'test-workspace' } );
+
+		_workspaceId = ( await response.json() as { id: string } ).id;
+	} );
+
+	after( async () => {
+		await _ckboxAPICall( 'DELETE', `/superadmin/workspaces/${ _workspaceId }` );
+	} );
+
 	describe( 'verifyConnection()', () => {
-		let _workspaceId: string;
-
-		before( async () => {
-			const response: Response = await _ckboxAPICall( 'POST', '/superadmin/workspaces', { name: 'test-workspace' } );
-
-			_workspaceId = ( await response.json() as { id: string } ).id;
-		} );
-
-		after( async () => {
-			await _ckboxAPICall( 'DELETE', `/superadmin/workspaces/${ _workspaceId }` );
-		} );
-
 		it( 'should pass if connection can be established', async () => {
 			const config: CKBoxConfig = _createConfig();
 			const client: CKBoxClient = new CKBoxClient( config );
@@ -64,6 +65,158 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			await assert.rejects( async () => {
 				await client.verifyConnection();
 			} );
+		} );
+	} );
+
+	describe( 'createCategory()', () => {
+		it( 'should create a category', async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+
+			const categoryId: string = await client.createCategory( {
+				name: 'test-category',
+				allowedExtensions: [ 'jpg' ]
+			} );
+
+			assert( categoryId );
+
+			const response: Response = await _ckboxAPICall( 'GET', `/categories/${ categoryId }`, undefined, _workspaceId );
+			const responseBody: Record<string, unknown> = await response.json() as Record<string, unknown>;
+
+			assert.equal( response.status, 200 );
+			assert.equal( responseBody.name, 'test-category' );
+			assert.deepEqual( responseBody.extensions, [ 'jpg' ] );
+		} );
+	} );
+
+	describe( 'createFolder()', () => {
+		let _categoryId: string;
+
+		before( async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+
+			_categoryId = await client.createCategory( {
+				name: 'test-category',
+				allowedExtensions: [ 'jpg' ]
+			} );
+		} );
+
+		it( 'should create a folder in category', async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+
+			const folderId: string = await client.createFolder( {
+				name: 'test-folder',
+				location: { categoryId: _categoryId }
+			} );
+
+			assert( folderId );
+
+			const response: Response = await _ckboxAPICall( 'GET', `/folders/${ folderId }`, undefined, _workspaceId );
+			const responseBody: Record<string, unknown> = await response.json() as Record<string, unknown>;
+
+			assert.equal( response.status, 200 );
+			assert.equal( responseBody.name, 'test-folder' );
+			assert.equal( responseBody.categoryId, _categoryId );
+		} );
+
+		it( 'should create a folder in another folder', async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+
+			const parentFolderId: string = await client.createFolder( {
+				name: 'test-folder',
+				location: { categoryId: _categoryId }
+			} );
+
+			assert( parentFolderId );
+
+			const folderId: string = await client.createFolder( {
+				name: 'test-folder',
+				location: { folderId: parentFolderId }
+			} );
+
+			assert( folderId );
+
+			const response: Response = await _ckboxAPICall( 'GET', `/folders/${ folderId }`, undefined, _workspaceId );
+			const responseBody: Record<string, unknown> = await response.json() as Record<string, unknown>;
+
+			assert.equal( response.status, 200 );
+			assert.equal( responseBody.name, 'test-folder' );
+			assert.equal( responseBody.parentId, parentFolderId );
+		} );
+	} );
+
+	describe( 'uploadAsset()', () => {
+		let categoryId: string;
+		let folderId: string;
+
+		before( async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+
+			categoryId = await client.createCategory( {
+				name: 'test-category',
+				allowedExtensions: [ 'txt' ]
+			} );
+
+			folderId = await client.createFolder( {
+				name: 'test-folder',
+				location: { categoryId }
+			} );
+		} );
+
+		it( 'should upload an asset to a category', async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+			const content: Buffer = Buffer.from( 'Example file' );
+			const filename: string = 'test-asset.txt';
+
+			const assetId: string = await client.uploadAsset( {
+				name: filename,
+				size: content.length,
+				stream: Readable.from( content ),
+				location: { categoryId }
+			} );
+
+			assert( assetId );
+
+			const response: Response = await _ckboxAPICall( 'GET', `/assets/${ assetId }`, undefined, _workspaceId );
+
+			const responseBody: Record<string, unknown> = await response.json() as Record<string, unknown>;
+
+			assert.equal( response.status, 200 );
+			assert.equal( responseBody.name, 'test-asset' );
+			assert.equal( responseBody.extension, 'txt' );
+			assert.equal( responseBody.categoryId, categoryId );
+			assert.equal( responseBody.size, content.length );
+		} );
+
+		it( 'should upload an asset to a folder', async () => {
+			const config: CKBoxConfig = _createConfig( { workspaceId: _workspaceId } );
+			const client: CKBoxClient = new CKBoxClient( config );
+			const content: Buffer = Buffer.from( 'Example file' );
+			const filename: string = 'test-asset.txt';
+
+			const assetId: string = await client.uploadAsset( {
+				name: filename,
+				size: content.length,
+				stream: Readable.from( content ),
+				location: { folderId }
+			} );
+
+			assert( assetId );
+
+			const response: Response = await _ckboxAPICall( 'GET', `/assets/${ assetId }`, undefined, _workspaceId );
+
+			const responseBody: Record<string, unknown> = await response.json() as Record<string, unknown>;
+
+			assert.equal( response.status, 200 );
+			assert.equal( responseBody.name, 'test-asset' );
+			assert.equal( responseBody.extension, 'txt' );
+			assert.equal( responseBody.folderId, folderId );
+			assert.equal( responseBody.size, content.length );
 		} );
 	} );
 } );
