@@ -2,16 +2,15 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { ISourceStorageAdapter, IMigrationPlan, ISourceCategory, ISourceFolder } from '@ckbox-migrator';
+import { ISourceStorageAdapter, IMigrationPlan, ISourceCategory, ISourceFolder, ISourceAsset } from '@ckbox-migrator';
 
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import fetch, { Response } from 'node-fetch';
 
 import { CKFinderConfig } from './CKFinderConfig';
-import { CKFinderGetFoldersResponse, CKFinderInitResponse } from './CKFinderResponses';
-import { randomUUID } from 'crypto';
-import path from 'path';
+import { CKFinderGetFilesResponse, CKFinderGetFoldersResponse, CKFinderInitResponse } from './CKFinderResponses';
+import path, { ParsedPath } from 'path';
 
 export default class CKFinderAdapter implements ISourceStorageAdapter {
 	readonly name: string = 'CKFinder';
@@ -37,10 +36,11 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 
 	public async analyzeStorage(): Promise<IMigrationPlan> {
 		const categories: ISourceCategory[] = await this._getCategories();
+		const assets: ISourceAsset[] = await this._getAssets( categories );
 
 		return {
 			categories,
-			assets: []
+			assets
 		};
 	}
 
@@ -56,7 +56,7 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		);
 
 		return await this._promiseMap( categoriesResponse.resourceTypes, async resourceType => ( {
-			id: resourceType.hash,
+			id: resourceType.name,
 			name: resourceType.name,
 			allowedExtensions: resourceType.allowedExtensions.split( ',' ),
 			folders: ( await this._getFolder( resourceType.name, '' ) ).childFolders
@@ -76,10 +76,64 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		} );
 
 		return {
-			id: randomUUID(),
+			id: foldersResponse.currentFolder.path,
 			name,
 			childFolders
 		}
+	}
+
+	private async _getAssets( categories: ISourceCategory[] ): Promise<ISourceAsset[]> {
+		const assets: ISourceAsset[] = [];
+
+		for ( const category of categories ) {
+			assets.push( ...( await this._getAssetsForCategory( category ) ) );
+		}
+
+		return assets;
+	}
+
+	private async _getAssetsForCategory( category: ISourceCategory ): Promise<ISourceAsset[]> {
+		const assets: ISourceAsset[] = [];
+
+		assets.push( ...( await this._getAssetsForFolder( category, { id: '/', name: '', childFolders: [] } ) ) );
+
+		for ( const folder of category.folders ) {
+			assets.push( ...( await this._getAssetsForFolder( category, folder ) ) );
+		}
+
+		return assets;
+	}
+
+	private async _getAssetsForFolder( category: ISourceCategory, folder: ISourceFolder ): Promise<ISourceAsset[]> {
+		const assets: ISourceAsset[] = [];
+
+		const assetsResponse: CKFinderGetFilesResponse = await this._fetch(
+			{ command: 'GetFiles', type: category.name, currentFolder: folder.id },
+			CKFinderGetFilesResponse
+		);
+
+		for ( const asset of assetsResponse.files ) {
+			const parsedPath: ParsedPath = path.parse( asset.name );
+
+			assets.push( {
+				id: `${ folder.id }${ asset.name }`,
+				name: parsedPath.name,
+				extension: parsedPath.ext.substring( 1 ),
+				// TODO: Use URL constructor.
+				downloadUrl: `${ this._config.connectorPath }?command=Proxy&type=${ category.id }&currentFolder=${ folder.id }&fileName=${ asset.name }`,
+				downloadUrlToReplace: `${ category.id }${ folder.id }${ asset.name }`,
+				location: {
+					categoryId: category.id,
+					folderId: folder.id
+				}
+			} );
+		}
+
+		for ( const childFolder of folder.childFolders ) {
+			assets.push( ...( await this._getAssetsForFolder( category, childFolder ) ) );
+		}
+
+		return assets;
 	}
 
 	private async _fetch<T extends object>( parameters: Record<string, string>, responseType: new () => T ): Promise<T> {

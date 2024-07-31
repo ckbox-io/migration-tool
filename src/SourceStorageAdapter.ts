@@ -81,6 +81,12 @@ export interface ISourceFolder {
 	readonly childFolders: ISourceFolder[];
 }
 
+export interface ISourceLocation {
+	categoryId: string;
+
+	folderId?: string;
+}
+
 export interface ISourceAsset {
 
 	/**
@@ -104,9 +110,9 @@ export interface ISourceAsset {
 	readonly extension: string;
 
 	/**
-	 * Path to the asset in the source storage.
+	 * Location where the asset should be stored.
 	 */
-	readonly path: string;
+	readonly location: ISourceLocation;
 
 	/**
 	 * URL that should be replaced in the content.

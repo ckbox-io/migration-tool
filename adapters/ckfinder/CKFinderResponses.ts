@@ -57,3 +57,22 @@ export class CKFinderChildFolder {
 	@IsDefined()
 	public readonly hasChildren: boolean;
 }
+
+
+export class CKFinderGetFilesResponse {
+	@ValidateNested()
+	@Type( () => CKFinderCurrentFolder )
+	@IsDefined()
+	public readonly currentFolder: CKFinderCurrentFolder;
+
+	@ValidateNested( { each: true } )
+	@Type( () => CKFinderFile )
+	@IsDefined()
+	public readonly files: CKFinderFile[];
+}
+
+export class CKFinderFile {
+	@IsString()
+	@IsDefined()
+	name: string;
+}
