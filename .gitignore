@@ -6,6 +6,7 @@ report.*.json
 *.tsbuildinfo
 dist
 dist-tests
+dist-adapters
 build
 
 node_modules
@@ -18,6 +19,7 @@ pnpm-*.log*
 npm-debug.log*
 
 logs
+*.log
 __data
 
 .eslintcache

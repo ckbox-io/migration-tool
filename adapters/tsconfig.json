@@ -2,13 +2,10 @@
   "extends": "../tsconfig.base",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "../dist-tests",
+    "outDir": "../dist-adapters",
     "baseUrl": ".",
     "paths": {
-      "@adapters": ["../dist-adapters"],
-      "@adapters/*": ["../dist-adapters/*"],
-      "@src": ["../dist"],
-      "@src/*": ["../dist/*"]
+      "@ckbox-migrator": ["../dist"]
     }
   },
   "include": [

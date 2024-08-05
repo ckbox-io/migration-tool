@@ -1,11 +1,10 @@
 {
     "compilerOptions": {
     "lib": [
-      "es2021",
-      "dom"
+      "es2022"
     ],
     "module": "commonjs",
-    "target": "es2021",
+    "target": "es2022",
     "moduleResolution": "node",
     "allowJs": true,
     "noImplicitAny": true,

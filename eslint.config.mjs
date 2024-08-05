@@ -120,12 +120,6 @@ export default tseslint.config({
 				max: 1
 			}
 		],
-		'new-cap': [
-			'error',
-			{
-				capIsNewExceptionPattern: 'Mixin$'
-			}
-		],
 		'new-parens': 'error',
 		'no-multiple-empty-lines': [
 			'error',
@@ -253,10 +247,6 @@ export default tseslint.config({
 			'error',
 			'after'
 		],
-		'@typescript-eslint/array-type': [
-			'error',
-			{ default: 'generic' }
-		],
 		'@typescript-eslint/ban-types': [
 			'error',
 			{
@@ -271,7 +261,6 @@ export default tseslint.config({
 				objectLiteralTypeAssertions: 'allow-as-parameter'
 			}
 		],
-		'@typescript-eslint/consistent-type-imports': 'error',
 		'@typescript-eslint/explicit-member-accessibility': [
 			'error',
 			{
@@ -289,7 +278,6 @@ export default tseslint.config({
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
 		'@typescript-eslint/no-non-null-assertion': 'off',
-		'@typescript-eslint/parameter-properties': 'error',
 		'@typescript-eslint/type-annotation-spacing': 'error',
 		'@typescript-eslint/unified-signatures': 'error',
 		'@typescript-eslint/no-unused-expressions': 'error',

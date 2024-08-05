@@ -1,0 +1,21 @@
+{
+	"source": {
+		"type": "ckfinder",
+		"options": {
+			"connectorPath": "http://localhost:8080/ckfinder/connector",
+			"authentication": {
+				"headers": {
+					"Cookie": "PHPSESSID=e0baf7e705e40f7e7dea7fa3d04a5a79"
+				}
+			}
+		}
+	},
+	"ckbox": {
+		"accessCredentials": {
+			"environmentId": "env-id-0000000000000",
+			"secret": "<SECRET>"
+		},
+		"workspaceId": "workspace-id-0000000",
+		"serviceOrigin": "https://api.ckbox.io"
+	}
+}

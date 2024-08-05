@@ -1,0 +1,7 @@
+name: ckbox-migrator-tests
+
+services:
+  ckfinder:
+    build: ./docker/ckfinder
+    ports:
+      - "8080:8080"
