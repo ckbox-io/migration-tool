@@ -79,6 +79,7 @@ export class CKBoxAccessCredentialsConfig {
 	public readonly secret: string;
 }
 
+// TODO: Move to LoadConfigTask
 export function printValidationErrors( validationErrors: ValidationError[], indent?: number ) {
 	for ( const error of validationErrors ) {
 		console.log( ' '.repeat( ( indent ?? 0 ) * 4 ) + '- ' + chalk.blue.bold( error.property ) );
@@ -88,7 +89,7 @@ export function printValidationErrors( validationErrors: ValidationError[], inde
 		}
 
 		if ( error.children ) {
-			printValidationErrors( error.children, ( indent ?? 0 ) + 1 )
+			printValidationErrors( error.children, ( indent ?? 0 ) + 1 );
 		}
 	}
 }

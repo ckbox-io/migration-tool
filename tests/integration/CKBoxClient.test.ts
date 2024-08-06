@@ -5,13 +5,13 @@
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import process from 'node:process';
+import { Readable } from 'node:stream';
 
 import { plainToInstance } from 'class-transformer';
 import jwt from 'jsonwebtoken';
 
 import { CKBoxConfig } from '@src/Config';
 import CKBoxClient from '@src/CKBoxClient';
-import { Readable } from 'node:stream';
 
 const CKBOX_API_ORIGIN: string | undefined = process.env.CKBOX_API_ORIGIN;
 const CKBOX_API_SECRET: string | undefined = process.env.CKBOX_API_SECRET;

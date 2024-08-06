@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { CKBoxConfig } from './Config';
 import { blob } from 'node:stream/consumers';
 
-export interface ICBoxClient {
+export interface ICKBoxClient {
 	verifyConnection(): Promise<void>;
 
 	createCategory( category: ICKBoxCategory ): Promise<string>;
@@ -39,7 +39,7 @@ export interface ICKBoxAsset {
 	stream: NodeJS.ReadableStream;
 }
 
-export default class CKBoxClient implements ICBoxClient {
+export default class CKBoxClient implements ICKBoxClient {
 	private _token: string;
 
 	public constructor( private _config: CKBoxConfig ) {
