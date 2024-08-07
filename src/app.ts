@@ -16,6 +16,7 @@ import VerifyCKBoxConnectionTask from './tasks/VerifyCKBoxConnectionTask';
 import CreateMigrationPlanTask from './tasks/CreateMigrationPlanTask';
 import MigrateCategoriesTask from './tasks/MigrateCategoriesTask';
 import MigratorContext, { IMigratorContext } from './MigratorContext';
+import MigrateFoldersTask from './tasks/MigrateFoldersTask';
 
 ( async () => {
 	const logger: ILogger = new Logger( 'migrator' );
@@ -32,7 +33,8 @@ import MigratorContext, { IMigratorContext } from './MigratorContext';
 		new VerifyCKBoxConnectionTask(),
 		new CreateMigrationPlanTask(),
 		// TODO: Skip this task when the --dry-run flag is set
-		new MigrateCategoriesTask()
+		new MigrateCategoriesTask(),
+		new MigrateFoldersTask()
 	], ui );
 
 	try {
