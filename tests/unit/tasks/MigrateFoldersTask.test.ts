@@ -14,6 +14,7 @@ import UI, { IUI } from '@src/UI';
 import Logger, { ILogger } from '@src/Logger';
 
 import { createCKBoxClientFake, createLoggerFake, createUIFake } from '../utils/_fakes';
+import MigrationPlan from '@src/MigrationPlan';
 
 // TODO: Recognize in which category the folder should be created!!!
 describe( 'MigrateFoldersTask', () => {
@@ -178,15 +179,13 @@ describe( 'MigrateFoldersTask', () => {
 } );
 
 function _createMigrationPlan( folders: ISourceFolder[] ): IMigrationPlan {
-	return {
-		categories: [
-			{
-				id: 'c-1',
-				name: 'Foo',
-				allowedExtensions: [ 'jpg' ],
-				folders
-			}
-		],
-		assets: []
-	};
+	return new MigrationPlan(
+		[ {
+			id: 'c-1',
+			name: 'Foo',
+			allowedExtensions: [ 'jpg' ],
+			folders
+		} ],
+		[]
+	);
 }

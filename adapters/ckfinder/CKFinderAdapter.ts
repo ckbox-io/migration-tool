@@ -34,7 +34,7 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		}
 	}
 
-	public async analyzeStorage(): Promise<IMigrationPlan> {
+	public async prepareMigrationPlan(): Promise<IMigrationPlan> {
 		const categories: ISourceCategory[] = await this._getCategories();
 		const assets: ISourceAsset[] = await this._getAssets( categories );
 
@@ -44,9 +44,8 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		};
 	}
 
-	public getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
-		// Download the asset from the source storage.
-		throw new Error( 'Not implemented' );
+	public async getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
+		return await this._fetchStream( downloadUrl );
 	}
 
 	private async _getCategories(): Promise<ISourceCategory[]> {
@@ -124,7 +123,8 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 				downloadUrlToReplace: `${ category.id }${ folder.id }${ asset.name }`,
 				location: {
 					categoryId: category.id,
-					folderId: folder.id
+					// TODO: Add test for this scenario.
+					folderId: folder.id === '/' ? undefined : folder.id
 				}
 			} );
 		}
@@ -134,6 +134,16 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		}
 
 		return assets;
+	}
+
+	private async _fetchStream( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
+		const response: Response = await fetch( downloadUrl, { headers: this._config.authentication.headers } );
+
+		if ( !response.ok ) {
+			throw new Error( `Failed to fetch data from ${ downloadUrl }. Status ${ response.status }. ${ await response.text() }` );
+		}
+
+		return response.body;
 	}
 
 	private async _fetch<T extends object>( parameters: Record<string, string>, responseType: new () => T ): Promise<T> {

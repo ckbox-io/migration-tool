@@ -7,7 +7,7 @@
     "paths": {
       "@adapters": ["../dist-adapters"],
       "@adapters/*": ["../dist-adapters/*"],
-      "@src": ["../dist"],
+      "@ckbox-migrator": ["../dist"],
       "@src/*": ["../dist/*"]
     }
   },

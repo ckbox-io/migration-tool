@@ -19,7 +19,7 @@ export interface ISourceStorageAdapter {
 	/**
 	 * Analyzes the source storage and returns a migration plan.
 	 */
-	analyzeStorage(): Promise<IMigrationPlan>;
+	prepareMigrationPlan(): Promise<IMigrationPlan>;
 
 	/**
 	 * Downloads the asset from the source storage.

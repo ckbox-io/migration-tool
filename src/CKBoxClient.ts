@@ -35,7 +35,6 @@ export interface ICKBoxLocation {
 export interface ICKBoxAsset {
 	name: string;
 	location: ICKBoxLocation;
-	size: number;
 	stream: NodeJS.ReadableStream;
 }
 

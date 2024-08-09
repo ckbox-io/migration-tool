@@ -10,6 +10,7 @@ import { ICKBoxClient } from '@src/CKBoxClient';
 
 import { plainToInstance } from 'class-transformer';
 import { ILogger } from '@src/Logger';
+import MigrationPlan from '@src/MigrationPlan';
 
 export function createUIFake(): IUI {
 	return {
@@ -43,10 +44,7 @@ export function createSourceStorageAdapterFake(): ISourceStorageAdapter {
 		name: 'FakeAdapter',
 		loadConfig: () => Promise.resolve(),
 		verifyConnection: () => Promise.resolve(),
-		analyzeStorage: () => Promise.resolve( {
-			categories: [],
-			assets: []
-		} ),
+		prepareMigrationPlan: () => Promise.resolve( new MigrationPlan( [], [] ) ),
 		getAsset: () => Promise.reject( new Error( 'Not implemented' ) )
 	};
 }

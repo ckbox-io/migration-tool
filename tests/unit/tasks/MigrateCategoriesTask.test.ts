@@ -14,6 +14,7 @@ import UI, { IUI } from '@src/UI';
 import Logger, { ILogger } from '@src/Logger';
 
 import { createCKBoxClientFake, createLoggerFake, createUIFake } from '../utils/_fakes';
+import MigrationPlan from '@src/MigrationPlan';
 
 describe( 'MigrateCategoriesTask', () => {
 	describe( 'run()', () => {
@@ -32,8 +33,8 @@ describe( 'MigrateCategoriesTask', () => {
 
 			loggerFake = createLoggerFake();
 
-			migrationPlan = {
-				categories: [
+			migrationPlan = new MigrationPlan(
+				[
 					{
 						id: 'c-1',
 						name: 'Foo',
@@ -47,8 +48,8 @@ describe( 'MigrateCategoriesTask', () => {
 						folders: []
 					}
 				],
-				assets: []
-			};
+				[]
+			);
 
 			context.setInstance( clientFake, CKBoxClient.name );
 			context.setInstance( migrationPlan, 'MigrationPlan' );

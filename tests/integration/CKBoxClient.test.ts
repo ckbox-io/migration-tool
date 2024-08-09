@@ -175,7 +175,6 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 
 			const assetId: string = await client.uploadAsset( {
 				name: filename,
-				size: content.length,
 				stream: Readable.from( content ),
 				location: { categoryId }
 			} );
@@ -190,7 +189,6 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			assert.equal( responseBody.name, 'test-asset' );
 			assert.equal( responseBody.extension, 'txt' );
 			assert.equal( responseBody.categoryId, categoryId );
-			assert.equal( responseBody.size, content.length );
 		} );
 
 		it( 'should upload an asset to a folder', async () => {
@@ -201,7 +199,6 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 
 			const assetId: string = await client.uploadAsset( {
 				name: filename,
-				size: content.length,
 				stream: Readable.from( content ),
 				location: { folderId }
 			} );
@@ -216,7 +213,6 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			assert.equal( responseBody.name, 'test-asset' );
 			assert.equal( responseBody.extension, 'txt' );
 			assert.equal( responseBody.folderId, folderId );
-			assert.equal( responseBody.size, content.length );
 		} );
 	} );
 } );

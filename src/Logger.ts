@@ -47,7 +47,7 @@ export default class Logger implements ILogger {
 		}
 
 		if ( data instanceof Error ) {
-			return ' ' + ( data.stack || data.message );
+			return ' ' + ( data.stack || data.message ) + ( data.cause ? 'Cause: ' + this._formatData( data.cause as Error ) : '' );
 		}
 
 		return ' ' + Object.keys( data ).map( key => `${ key }=${ data[ key ] }` ).join( ', ' );

@@ -4,6 +4,7 @@
   "description": "CLI tool for migrating assets to CKBox",
   "main": "dist/index.js",
   "scripts": {
+    "start": "TS_NODE_PROJECT=.. node -r tsconfig-paths/register --enable-source-maps dist/app.js",
     "build": "npm run build:migrator && npm run build:adapters && npm run build:test",
     "build:migrator": "tsc",
     "build:adapters": "tsc --build ./adapters/tsconfig.json",
@@ -27,7 +28,7 @@
     "@types/eslint__js": "8.42.3",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "20.14.11",
-    "@types/node-fetch": "^2.6.11",
+    "@types/node-fetch": "2.6.11",
     "eslint": "8.57.0",
     "tsconfig-paths": "3.9.0",
     "typescript": "5.5.4",
@@ -37,8 +38,8 @@
     "chalk": "4.1.2",
     "class-transformer": "0.5.1",
     "class-validator": "0.14.1",
-    "jsonwebtoken": "^9.0.2",
-    "node-fetch": "^2.7.0",
+    "jsonwebtoken": "9.0.2",
+    "node-fetch": "2.7.0",
     "ora": "8.0.1",
     "reflect-metadata": "0.2.2"
   },

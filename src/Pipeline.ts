@@ -39,6 +39,9 @@ export default class Pipeline<ContextT> implements IPipeline<ContextT> {
 					this._ui.fail( task.failureMessage );
 				}
 
+				// TODO: Remove
+				console.log( error );
+
 				throw error;
 			}
 		}
