@@ -19,15 +19,14 @@ describe( 'CreateAdapterTask', () => {
 		let adapterFactoryFake: IAdapterFactory;
 		let adapterFake: ISourceStorageAdapter;
 		let adapterConfig: Record<string, unknown>;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			adapterFactoryFake = createAdapterFactoryFake();
-
 			adapterFake = createSourceStorageAdapterFake();
-
 			adapterConfig = { foo: 'bar' };
+			abortController = new AbortController();
 
 			context.setInstance( createMigratorConfigFake( adapterConfig ) );
 		} );
@@ -37,7 +36,7 @@ describe( 'CreateAdapterTask', () => {
 
 			const createAdapterMock: Mock<Function> = t.mock.method( adapterFactoryFake, 'createAdapter', () => adapterFake );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( createAdapterMock.mock.callCount(), 1 );
 			assert.deepEqual( createAdapterMock.mock.calls[ 0 ].arguments, [ 'FakeAdapter' ] );
@@ -52,7 +51,7 @@ describe( 'CreateAdapterTask', () => {
 
 			t.mock.method( adapterFactoryFake, 'createAdapter', () => adapterFake );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( loadConfigMock.mock.callCount(), 1 );
 			assert.deepEqual( loadConfigMock.mock.calls[ 0 ].arguments, [ adapterConfig ] );

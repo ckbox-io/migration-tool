@@ -27,7 +27,7 @@ export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 		const assetsCount: number = migrationPlan.getAssetsCount();
 		const categoriesString: string = `${ categoriesCount } ${ categoriesCount === 1 ? 'category' : 'categories' }`;
 		const foldersString: string = `${ foldersCount } ${ foldersCount === 1 ? 'folder' : 'folders' }`;
-		const assetsString: string = `${ assetsCount } ${ assetsCount === 1 ? 'asset' : 'assets' }`;
+		const assetsString: string = `${ assetsCount } ${ assetsCount === 1 ? 'file' : 'files' }`;
 		const categoriesNames: string = categories.map( category => category.name ).join( ', ' );
 
 		ui.info(

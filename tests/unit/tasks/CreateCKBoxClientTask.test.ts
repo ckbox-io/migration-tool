@@ -17,11 +17,12 @@ describe( 'CreateCKBoxClientTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
 		let configFake: MigratorConfig;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			configFake = createMigratorConfigFake();
+			abortController = new AbortController();
 
 			context.setInstance( configFake );
 		} );
@@ -29,7 +30,7 @@ describe( 'CreateCKBoxClientTask', () => {
 		it( 'should create a client instance', async () => {
 			const task: ITask<MigratorContext> = new CreateCKBoxClientTask();
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert( context.getInstance( CKBoxClient ) );
 		} );

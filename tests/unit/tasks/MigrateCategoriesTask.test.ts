@@ -23,15 +23,14 @@ describe( 'MigrateCategoriesTask', () => {
 		let migrationPlan: IMigrationPlan;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			clientFake = createCKBoxClientFake();
-
 			uiFake = createUIFake();
-
 			loggerFake = createLoggerFake();
+			abortController = new AbortController();
 
 			migrationPlan = new MigrationPlan(
 				[
@@ -64,7 +63,7 @@ describe( 'MigrateCategoriesTask', () => {
 				Promise.resolve( 'target-id-' + category.name )
 			) );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( createCategoryMock.mock.callCount(), 2 );
 			assert.deepEqual( createCategoryMock.mock.calls[ 0 ].arguments, [
@@ -89,7 +88,7 @@ describe( 'MigrateCategoriesTask', () => {
 				Promise.resolve( 'target-id-' + category.name )
 			) );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			const categoryMap: Map<string, string> = context.getInstance( 'MigratedCategoriesMap' );
 
@@ -108,7 +107,7 @@ describe( 'MigrateCategoriesTask', () => {
 			const infoLogMock: Mock<Function> = t.mock.method( loggerFake, 'info' );
 			const spinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner' );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( infoLogMock.mock.callCount(), 4 );
 			assert.deepEqual( infoLogMock.mock.calls[ 0 ].arguments, [ 'Creating category', { sourceCategoryId: 'c-1' } ] );

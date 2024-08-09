@@ -23,16 +23,15 @@ describe( 'MigrateFoldersTask', () => {
 		let clientFake: ICKBoxClient;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
+		let abortController: AbortController;
 		let migratedCategoriesMap: Map<string, string>;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			clientFake = createCKBoxClientFake();
-
 			uiFake = createUIFake();
-
 			loggerFake = createLoggerFake();
+			abortController = new AbortController();
 
 			migratedCategoriesMap = new Map( [ [ 'c-1', 'migrated-category-id-c-1' ] ] );
 
@@ -64,7 +63,7 @@ describe( 'MigrateFoldersTask', () => {
 
 			const createFolderMock: Mock<Function> = t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( createFolderMock.mock.callCount(), 2 );
 
@@ -102,7 +101,7 @@ describe( 'MigrateFoldersTask', () => {
 
 			const createFolderMock: Mock<Function> = t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( createFolderMock.mock.callCount(), 2 );
 
@@ -136,7 +135,7 @@ describe( 'MigrateFoldersTask', () => {
 			t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( loggerInfoMock.mock.callCount(), 2 );
 
@@ -167,7 +166,7 @@ describe( 'MigrateFoldersTask', () => {
 
 			context.setInstance( migrationPlan, 'MigrationPlan' );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			const migratedFoldersMap: Map<string, Map<string, string>> = context.getInstance( 'MigratedFoldersMap' );
 

@@ -23,16 +23,17 @@ describe( 'MigrateAssetsTask', () => {
 		let adapterFake: ISourceStorageAdapter;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
+		let abortController: AbortController;
 		let migratedCategoriesMap: Map<string, string>;
 		let migratedFoldersMap: Map<string, Map<string, string>>;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			clientFake = createCKBoxClientFake();
 			adapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
+			abortController = new AbortController();
 
 			migratedCategoriesMap = new Map( [ [ 'c-1', 'migrated-category-id-c-1' ] ] );
 			migratedFoldersMap = new Map( [ [ 'c-1', new Map( [ [ 'f-1', 'migrated-folder-id-f-1' ] ] ) ] ] );
@@ -77,7 +78,7 @@ describe( 'MigrateAssetsTask', () => {
 
 			context.setInstance( migrationPlan );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( uploadAssetMock.mock.callCount(), 1 );
 			assert.deepEqual( uploadAssetMock.mock.calls[ 0 ].arguments, [ {
@@ -122,7 +123,7 @@ describe( 'MigrateAssetsTask', () => {
 
 			context.setInstance( migrationPlan );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( uploadAssetMock.mock.callCount(), 1 );
 			assert.deepEqual( uploadAssetMock.mock.calls[ 0 ].arguments, [ {
@@ -177,7 +178,7 @@ describe( 'MigrateAssetsTask', () => {
 
 			context.setInstance( migrationPlan );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( uiSpinnerMock.mock.callCount(), 2 );
 			assert.deepEqual( uiSpinnerMock.mock.calls[ 0 ].arguments, [ 'Copying assets: 0% (processing file 1 of 2)' ] );

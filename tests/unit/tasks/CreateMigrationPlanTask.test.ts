@@ -19,12 +19,13 @@ describe( 'CreateMigrationPlanTask', () => {
 		let sourceStorageAdapterFake: ISourceStorageAdapter;
 		let uiFake: IUI;
 		let migrationPlan: IMigrationPlan;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			sourceStorageAdapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
+			abortController = new AbortController();
 
 			migrationPlan = {
 				categories: [
@@ -70,7 +71,7 @@ describe( 'CreateMigrationPlanTask', () => {
 				Promise.resolve( migrationPlan )
 			) );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			const migrationPlanFromContext: IMigrationPlan = context.getInstance( MigrationPlan );
 
@@ -85,9 +86,9 @@ describe( 'CreateMigrationPlanTask', () => {
 				Promise.resolve( migrationPlan )
 			) );
 
-			const uiInfoMock = t.mock.method( uiFake, 'info' );
+			const uiInfoMock = t.mock.method( uiFake, 'info', () => {} );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( uiInfoMock.mock.callCount(), 1 );
 			assert.deepEqual( uiInfoMock.mock.calls[ 0 ].arguments, [

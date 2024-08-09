@@ -11,7 +11,7 @@ export interface ITask<ContextT> {
 
 	readonly failureMessage?: string;
 
-	run( context: ContextT ): Promise<void>;
+	run( context: ContextT, abortController: AbortController ): Promise<void>;
 }
 
 export interface IPipeline<ContextT> {
@@ -23,16 +23,24 @@ export default class Pipeline<ContextT> implements IPipeline<ContextT> {
 	constructor( private _tasks: ITask<ContextT>[], private _ui: IUI ) {}
 
 	public async run( context: ContextT ): Promise<void> {
+		const abortController: AbortController = new AbortController();
+
 		for ( const task of this._tasks ) {
 			try {
 				if ( task.processingMessage ) {
 					this._ui.spinner( task.processingMessage );
 				}
 
-				await task.run( context );
+				await task.run( context, abortController );
 
 				if ( task.processingMessage || task.successMessage ) {
 					this._ui.succeed( task.successMessage );
+				}
+
+				if ( abortController.signal.aborted ) {
+					this._ui.info( 'Migration aborted' );
+
+					break;
 				}
 			} catch ( error ) {
 				if ( task.processingMessage || task.failureMessage ) {

@@ -13,15 +13,17 @@ import { ITask } from '@src/Pipeline';
 describe( 'LoadConfigTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
+			abortController = new AbortController();
 		} );
 
 		it( 'should load the configuration', async () => {
 			const task: ITask<MigratorContext> = new LoadConfigTask();
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert( context.getInstance( MigratorConfig ) );
 		} );

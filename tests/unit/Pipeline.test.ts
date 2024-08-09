@@ -20,6 +20,7 @@ describe( 'Pipeline', () => {
 		let taskMock: ITask<ContextStub>;
 		let taskMock2: ITask<ContextStub>;
 		let failingTaskMock: ITask<ContextStub>;
+		let abortedTaskMock: ITask<ContextStub>;
 
 		beforeEach( () => {
 			contextStub = {};
@@ -48,6 +49,14 @@ describe( 'Pipeline', () => {
 			failingTaskMock = {
 				failureMessage: 'Task failed',
 				run: () => Promise.reject( new Error( 'Task failed' ) )
+			};
+
+			abortedTaskMock = {
+				run: ( context: ContextStub, abortController: AbortController ) => {
+					abortController.abort();
+
+					return Promise.resolve();
+				}
 			};
 		} );
 
@@ -78,7 +87,7 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a spinner while executing tasks', async t => {
-			const spinnerMock: Mock<Function> = t.mock.method( uiStub, 'spinner' );
+			const spinnerMock: Mock<Function> = t.mock.method( uiStub, 'spinner', () => {} );
 
 			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiStub );
 
@@ -89,7 +98,7 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a success message after executing task', async t => {
-			const succeedMock: Mock<Function> = t.mock.method( uiStub, 'succeed' );
+			const succeedMock: Mock<Function> = t.mock.method( uiStub, 'succeed', () => {} );
 
 			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiStub );
 
@@ -100,7 +109,7 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a failure message if task fails', async t => {
-			const failMock: Mock<Function> = t.mock.method( uiStub, 'fail' );
+			const failMock: Mock<Function> = t.mock.method( uiStub, 'fail', () => {} );
 
 			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ failingTaskMock ], uiStub );
 
@@ -110,6 +119,22 @@ describe( 'Pipeline', () => {
 
 			assert.equal( failMock.mock.callCount(), 1 );
 			assert.deepEqual( failMock.mock.calls[ 0 ].arguments, [ 'Task failed' ] );
+		} );
+
+		it( 'should stop executing tasks if one of them is aborted', async t => {
+			const infoMock: Mock<Function> = t.mock.method( uiStub, 'info', () => {} );
+			const runMock: Mock<Function> = t.mock.method( taskMock2, 'run', () => {} );
+
+			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
+				[ taskMock, abortedTaskMock, taskMock2 ],
+				uiStub
+			);
+
+			await pipeline.run( contextStub );
+
+			assert.equal( infoMock.mock.callCount(), 1 );
+			assert.deepEqual( infoMock.mock.calls[ 0 ].arguments, [ 'Migration aborted' ] );
+			assert.equal( runMock.mock.callCount(), 0 );
 		} );
 	} );
 } );

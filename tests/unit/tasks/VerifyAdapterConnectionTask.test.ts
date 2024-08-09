@@ -16,11 +16,12 @@ describe( 'VerifyAdapterConnectionTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
 		let adapterFake: ISourceStorageAdapter;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			adapterFake = createSourceStorageAdapterFake();
+			abortController = new AbortController();
 
 			context.setInstance( adapterFake, 'Adapter' );
 		} );
@@ -30,7 +31,7 @@ describe( 'VerifyAdapterConnectionTask', () => {
 
 			const verifyConnectionMock: Mock<Function> = t.mock.method( adapterFake, 'verifyConnection' );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( verifyConnectionMock.mock.callCount(), 1 );
 		} );

@@ -3,6 +3,7 @@
  */
 
 import fs, { WriteStream } from 'node:fs';
+import { unlink } from 'node:fs/promises';
 
 export interface ILogger {
 	info( message: string, data?: Record<string, unknown> ): void;
@@ -13,10 +14,16 @@ export interface ILogger {
 export default class Logger implements ILogger {
 	private _stream: WriteStream;
 
-	public constructor( private _name: string, stream?: WriteStream ) {
-		const filename: string = `ckbox_migrator_${ new Date().toISOString().replace( /:/g, '-' ) }.log`;
+	private _filename: string;
 
-		this._stream = stream ?? fs.createWriteStream( filename, { flags: 'a' } );
+	public constructor( private _name: string, stream?: WriteStream ) {
+		this._filename = `ckbox_migrator_${ new Date().toISOString().replace( /:/g, '-' ) }.log`;
+
+		this._stream = stream ?? fs.createWriteStream( this._filename, { flags: 'a' } );
+	}
+
+	public get filename(): string {
+		return this._filename;
 	}
 
 	public info( message: string, data?: Record<string, unknown> ): void {
@@ -33,6 +40,12 @@ export default class Logger implements ILogger {
 
 	public child( name: string ): ILogger {
 		return new Logger( name );
+	}
+
+	public async removeLogFile(): Promise<void> {
+		this._stream.end();
+
+		await unlink( this._filename );
 	}
 
 	private _log( level: string, message: string, data?: Record<string, unknown> | Error ): void {

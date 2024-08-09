@@ -15,11 +15,12 @@ describe( 'VerifyCKBoxConnectionTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
 		let clientFake: ICKBoxClient;
+		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
-
 			clientFake = createCKBoxClientFake();
+			abortController = new AbortController();
 
 			context.setInstance( clientFake, CKBoxClient.name );
 		} );
@@ -29,7 +30,7 @@ describe( 'VerifyCKBoxConnectionTask', () => {
 
 			const verifyConnectionMock: Mock<Function> = t.mock.method( clientFake, 'verifyConnection' );
 
-			await task.run( context );
+			await task.run( context, abortController );
 
 			assert.equal( verifyConnectionMock.mock.callCount(), 1 );
 		} );
