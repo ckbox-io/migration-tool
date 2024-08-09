@@ -2,10 +2,11 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { IMigrationPlan, ISourceStorageAdapter } from '../SourceStorageAdapter';
+import { ISourceStorageAdapter } from '../SourceStorageAdapter';
 import MigratorContext from '../MigratorContext';
 import { ITask } from '../Pipeline';
 import MigrationPlan from '../MigrationPlan';
+import UI, { IUI } from '../UI';
 
 export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 	public readonly processingMessage: string = 'Creating migration plan';
@@ -16,17 +17,27 @@ export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 
 	public async run( context: MigratorContext ): Promise<void> {
 		const adapter: ISourceStorageAdapter = context.getInstance( 'Adapter' );
+		const ui: IUI = context.getInstance( UI );
 
 		const { categories, assets } = await adapter.prepareMigrationPlan();
+		const migrationPlan: MigrationPlan = new MigrationPlan( categories, assets );
 
-		// TODO: Print migration plan summary.
-		// This tool will migrate files from the source storage using following steps:
-		// - create asset categories in CKBox (3 categories will be created: Files, Images, FooBar)
-		// - copy folder structure to CKBox (189 folders will be created)
-		// - copy files to CKBox (28890 files will be copied)
-		// - save the map of old and new file URLs
-		//   (the map will be saved in /some/path/ckbox_mapped_URLs_18.07.2024_09.16.txt)
+		const categoriesCount: number = migrationPlan.getCategoriesCount();
+		const foldersCount: number = migrationPlan.getFoldersCount();
+		const assetsCount: number = migrationPlan.getAssetsCount();
+		const categoriesString: string = `${ categoriesCount } ${ categoriesCount === 1 ? 'category' : 'categories' }`;
+		const foldersString: string = `${ foldersCount } ${ foldersCount === 1 ? 'folder' : 'folders' }`;
+		const assetsString: string = `${ assetsCount } ${ assetsCount === 1 ? 'asset' : 'assets' }`;
+		const categoriesNames: string = categories.map( category => category.name ).join( ', ' );
 
-		context.setInstance( new MigrationPlan( categories, assets ) );
+		ui.info(
+			'This tool will migrate files from the source storage using following steps:\n' +
+			` - create asset categories in CKBox (${ categoriesString } will be created: ${ categoriesNames })\n` +
+			` - copy folder structure to CKBox (${ foldersString } will be created)\n` +
+			` - copy files to CKBox (${ assetsString } will be copied)\n` +
+			' - save the map of old and new file URLs'
+		);
+
+		context.setInstance( migrationPlan );
 	}
 }
