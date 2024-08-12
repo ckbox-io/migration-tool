@@ -10,14 +10,24 @@ import MigratorContext from '@src/MigratorContext';
 import { IAdapterFactory } from '@src/AdapterFactory';
 import { ITask } from '@src/Pipeline';
 import { ISourceStorageAdapter } from '@src/SourceStorageAdapter';
+import { ILogger } from '@src/Logger';
+import { IUI } from '@src/UI';
 
-import { createAdapterFactoryFake, createMigratorConfigFake, createSourceStorageAdapterFake } from '../utils/_fakes';
+import {
+	createAdapterFactoryFake,
+	createLoggerFake,
+	createMigratorConfigFake,
+	createSourceStorageAdapterFake,
+	createUIFake
+} from '../utils/_fakes';
 
 describe( 'CreateAdapterTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
 		let adapterFactoryFake: IAdapterFactory;
 		let adapterFake: ISourceStorageAdapter;
+		let uiFake: IUI;
+		let loggerFake: ILogger;
 		let adapterConfig: Record<string, unknown>;
 		let abortController: AbortController;
 
@@ -25,6 +35,8 @@ describe( 'CreateAdapterTask', () => {
 			context = new MigratorContext();
 			adapterFactoryFake = createAdapterFactoryFake();
 			adapterFake = createSourceStorageAdapterFake();
+			uiFake = createUIFake();
+			loggerFake = createLoggerFake();
 			adapterConfig = { foo: 'bar' };
 			abortController = new AbortController();
 
@@ -36,7 +48,7 @@ describe( 'CreateAdapterTask', () => {
 
 			const createAdapterMock: Mock<Function> = t.mock.method( adapterFactoryFake, 'createAdapter', () => adapterFake );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( createAdapterMock.mock.callCount(), 1 );
 			assert.deepEqual( createAdapterMock.mock.calls[ 0 ].arguments, [ 'FakeAdapter' ] );
@@ -51,7 +63,7 @@ describe( 'CreateAdapterTask', () => {
 
 			t.mock.method( adapterFactoryFake, 'createAdapter', () => adapterFake );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( loadConfigMock.mock.callCount(), 1 );
 			assert.deepEqual( loadConfigMock.mock.calls[ 0 ].arguments, [ adapterConfig ] );

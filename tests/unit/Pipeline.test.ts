@@ -6,15 +6,17 @@ import { Mock, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { IUI } from '@src/UI';
+import { ILogger } from '@src/Logger';
 import Pipeline, { IPipeline, ITask } from '@src/Pipeline';
 
-import { createUIFake } from './utils/_fakes';
+import { createLoggerFake, createUIFake } from './utils/_fakes';
 
 describe( 'Pipeline', () => {
 	describe( 'run()', () => {
 		type ContextStub = Record<string, string>;
 
-		let uiStub: IUI;
+		let uiFake: IUI;
+		let loggerFake: ILogger;
 
 		let contextStub: ContextStub;
 		let taskMock: ITask<ContextStub>;
@@ -25,7 +27,8 @@ describe( 'Pipeline', () => {
 		beforeEach( () => {
 			contextStub = {};
 
-			uiStub = createUIFake();
+			uiFake = createUIFake();
+			loggerFake = createLoggerFake();
 
 			taskMock = {
 				processingMessage: 'Processing taskMock',
@@ -52,7 +55,7 @@ describe( 'Pipeline', () => {
 			};
 
 			abortedTaskMock = {
-				run: ( context: ContextStub, abortController: AbortController ) => {
+				run: ( context: ContextStub, ui: IUI, logger: ILogger, abortController: AbortController ) => {
 					abortController.abort();
 
 					return Promise.resolve();
@@ -63,7 +66,8 @@ describe( 'Pipeline', () => {
 		it( 'should execute all tasks in the pipeline', async () => {
 			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
 				[ taskMock, taskMock2 ],
-				uiStub
+				uiFake,
+				loggerFake
 			);
 
 			await pipeline.run( contextStub );
@@ -75,7 +79,8 @@ describe( 'Pipeline', () => {
 		it( 'should stop executing tasks if one of them fails', async () => {
 			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
 				[ taskMock, failingTaskMock, taskMock2 ],
-				uiStub
+				uiFake,
+				loggerFake
 			);
 
 			await assert.rejects( async () => {
@@ -87,9 +92,9 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a spinner while executing tasks', async t => {
-			const spinnerMock: Mock<Function> = t.mock.method( uiStub, 'spinner', () => {} );
+			const spinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiStub );
+			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiFake, loggerFake );
 
 			await pipeline.run( contextStub );
 
@@ -98,9 +103,9 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a success message after executing task', async t => {
-			const succeedMock: Mock<Function> = t.mock.method( uiStub, 'succeed', () => {} );
+			const succeedMock: Mock<Function> = t.mock.method( uiFake, 'succeed', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiStub );
+			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiFake, loggerFake );
 
 			await pipeline.run( contextStub );
 
@@ -109,9 +114,9 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a failure message if task fails', async t => {
-			const failMock: Mock<Function> = t.mock.method( uiStub, 'fail', () => {} );
+			const failMock: Mock<Function> = t.mock.method( uiFake, 'fail', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ failingTaskMock ], uiStub );
+			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ failingTaskMock ], uiFake, loggerFake );
 
 			await assert.rejects( async () => {
 				await pipeline.run( contextStub );
@@ -122,12 +127,13 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should stop executing tasks if one of them is aborted', async t => {
-			const infoMock: Mock<Function> = t.mock.method( uiStub, 'info', () => {} );
+			const infoMock: Mock<Function> = t.mock.method( uiFake, 'info', () => {} );
 			const runMock: Mock<Function> = t.mock.method( taskMock2, 'run', () => {} );
 
 			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
 				[ taskMock, abortedTaskMock, taskMock2 ],
-				uiStub
+				uiFake,
+				loggerFake
 			);
 
 			await pipeline.run( contextStub );

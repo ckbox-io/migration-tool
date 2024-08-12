@@ -12,6 +12,8 @@ import { plainToInstance } from 'class-transformer';
 import { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';
 import { IURLMappingWriter } from '@src/URLMappingWriter';
+import { IMigratedCategoriesRepository } from '@src/repositories/MigratedCategoriesRepository';
+import { IMigratedFoldersRepository } from '@src/repositories/MigratedFoldersRepository';
 
 export function createUIFake(): IUI {
 	return {
@@ -30,7 +32,8 @@ export function createLoggerFake(): ILogger {
 	return {
 		info: () => {},
 		warn: () => {},
-		error: () => {}
+		error: () => {},
+		child: () => createLoggerFake()
 	};
 }
 
@@ -82,5 +85,19 @@ export function createCKBoxClientFake(): ICKBoxClient {
 export function createURLMappingWriterFake(): IURLMappingWriter {
 	return {
 		write: () => {}
+	};
+}
+
+export function createMigratedCategoriesRepositoryFake(): IMigratedCategoriesRepository {
+	return {
+		addMigratedCategory: () => {},
+		getIdOfMigratedCategory: () => 'migrated-category-id-c-1'
+	};
+}
+
+export function createMigratedFoldersRepositoryFake(): IMigratedFoldersRepository {
+	return {
+		addMigratedFolder: () => {},
+		getIdOfMigratedFolder: () => 'migrated-folder-id-f-1'
 	};
 }

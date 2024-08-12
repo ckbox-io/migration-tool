@@ -6,10 +6,12 @@ import { ISourceStorageAdapter } from '../SourceStorageAdapter';
 import CKBoxClient, { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
 import MigratorContext from '../MigratorContext';
 import { ITask } from '../Pipeline';
-import Logger, { ILogger } from '../Logger';
-import UI, { IUI } from '../UI';
+import { ILogger } from '../Logger';
+import { IUI } from '../UI';
 import MigrationPlan from '../MigrationPlan';
 import { IURLMappingWriter } from '../URLMappingWriter';
+import { IMigratedCategoriesRepository } from '../repositories/MigratedCategoriesRepository';
+import { IMigratedFoldersRepository } from '../repositories/MigratedFoldersRepository';
 
 export default class MigrateAssetsTask implements ITask<MigratorContext> {
 	public readonly processingMessage: string = 'Migrating assets';
@@ -18,17 +20,16 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 
 	public readonly failureMessage: string = 'Assets migration failed';
 
-	public constructor( private _urlMappingWriter: IURLMappingWriter ) {}
+	public constructor(
+		private _urlMappingWriter: IURLMappingWriter,
+		private _migratedCategoriesRepository: IMigratedCategoriesRepository,
+		private _migratedFoldersRepository: IMigratedFoldersRepository
+	) {}
 
-	public async run( context: MigratorContext ): Promise<void> {
+	public async run( context: MigratorContext, ui: IUI, logger: ILogger ): Promise<void> {
 		const client: ICKBoxClient = context.getInstance( CKBoxClient );
 		const adapter: ISourceStorageAdapter = context.getInstance( 'Adapter' );
 		const migrationPlan: MigrationPlan = context.getInstance( MigrationPlan );
-		const logger: ILogger = context.getInstance( Logger );
-		const ui: IUI = context.getInstance( UI );
-
-		const migratedCategoriesMap: Map<string, string> = context.getInstance( 'MigratedCategoriesMap' );
-		const migratedFoldersMap: Map<string, Map<string, string>> = context.getInstance( 'MigratedFoldersMap' );
 
 		const assetsCount: number = migrationPlan.getAssetsCount();
 
@@ -49,7 +50,7 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 					ui.warn( progressMessage );
 				}
 
-				const location: ICKBoxLocation = _getMigratedLocation( sourceCategoryId, sourceFolderId );
+				const location: ICKBoxLocation = this._getMigratedLocation( sourceCategoryId, sourceFolderId );
 
 				const stream = await adapter.getAsset( sourceAsset.downloadUrl );
 				const { id: migratedAssetId, url } = await client.uploadAsset( {
@@ -71,32 +72,28 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 				throw new Error( 'Some assets migration failed.' );
 			}
 		}
+	}
 
-		// TODO: This function is in a wrong place
-		function _getMigratedLocation( sourceCategoryId: string, sourceFolderId?: string ): ICKBoxLocation {
-			const migratedCategoryId: string | undefined = migratedCategoriesMap.get( sourceCategoryId );
+	private _getMigratedLocation( sourceCategoryId: string, sourceFolderId?: string ): ICKBoxLocation {
+		const migratedCategoryId: string | null = this._migratedCategoriesRepository.getIdOfMigratedCategory( sourceCategoryId );
 
-			if ( !migratedCategoryId ) {
-				throw new Error( `Category ${ sourceCategoryId } was not migrated.` );
-			}
-
-			if ( !sourceFolderId ) {
-				return { categoryId: migratedCategoryId };
-			}
-
-			const migratedFolders: Map<string, string> | undefined = migratedFoldersMap.get( sourceCategoryId );
-
-			if ( !migratedFolders ) {
-				throw new Error( `Folders for category ${ sourceCategoryId } were not migrated.` );
-			}
-
-			const migratedFolderId: string | undefined = migratedFolders.get( sourceFolderId );
-
-			if ( !migratedFolderId ) {
-				throw new Error( `Folder ${ sourceFolderId } was not migrated.` );
-			}
-
-			return { folderId: migratedFolderId };
+		if ( !migratedCategoryId ) {
+			throw new Error( `Category ${ sourceCategoryId } was not migrated.` );
 		}
+
+		if ( !sourceFolderId ) {
+			return { categoryId: migratedCategoryId };
+		}
+
+		const migratedFolderId: string | null = this._migratedFoldersRepository.getIdOfMigratedFolder(
+			sourceCategoryId,
+			sourceFolderId
+		);
+
+		if ( !migratedFolderId ) {
+			throw new Error( `Folder ${ sourceFolderId } was not migrated.` );
+		}
+
+		return { folderId: migratedFolderId };
 	}
 }

@@ -9,6 +9,7 @@ export interface ILogger {
 	info( message: string, data?: Record<string, unknown> ): void;
 	warn( message: string, data?: Record<string, unknown> ): void;
 	error( message: string, data?: Record<string, unknown> | Error ): void;
+	child( name: string ): ILogger;
 }
 
 export default class Logger implements ILogger {

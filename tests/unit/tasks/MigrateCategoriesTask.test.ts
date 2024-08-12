@@ -10,11 +10,12 @@ import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan } from '@src/SourceStorageAdapter';
 import CKBoxClient, { ICKBoxCategory, ICKBoxClient } from '@src/CKBoxClient';
-import UI, { IUI } from '@src/UI';
-import Logger, { ILogger } from '@src/Logger';
+import { IUI } from '@src/UI';
+import { ILogger } from '@src/Logger';
 
-import { createCKBoxClientFake, createLoggerFake, createUIFake } from '../utils/_fakes';
+import { createCKBoxClientFake, createLoggerFake, createMigratedCategoriesRepositoryFake, createUIFake } from '../utils/_fakes';
 import MigrationPlan from '@src/MigrationPlan';
+import { IMigratedCategoriesRepository } from '@src/repositories/MigratedCategoriesRepository';
 
 describe( 'MigrateCategoriesTask', () => {
 	describe( 'run()', () => {
@@ -24,12 +25,14 @@ describe( 'MigrateCategoriesTask', () => {
 		let uiFake: IUI;
 		let loggerFake: ILogger;
 		let abortController: AbortController;
+		let migratedCategoriesRepositoryFake: IMigratedCategoriesRepository;
 
 		beforeEach( () => {
 			context = new MigratorContext();
 			clientFake = createCKBoxClientFake();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
+			migratedCategoriesRepositoryFake = createMigratedCategoriesRepositoryFake();
 			abortController = new AbortController();
 
 			migrationPlan = new MigrationPlan(
@@ -52,18 +55,16 @@ describe( 'MigrateCategoriesTask', () => {
 
 			context.setInstance( clientFake, CKBoxClient.name );
 			context.setInstance( migrationPlan, 'MigrationPlan' );
-			context.setInstance( uiFake, UI.name );
-			context.setInstance( loggerFake, Logger.name );
 		} );
 
 		it( 'should create categories', async t => {
-			const task: ITask<MigratorContext> = new MigrateCategoriesTask();
+			const task: ITask<MigratorContext> = new MigrateCategoriesTask( migratedCategoriesRepositoryFake );
 
 			const createCategoryMock: Mock<Function> = t.mock.method( clientFake, 'createCategory', ( category: ICKBoxCategory ) => (
 				Promise.resolve( 'target-id-' + category.name )
 			) );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( createCategoryMock.mock.callCount(), 2 );
 			assert.deepEqual( createCategoryMock.mock.calls[ 0 ].arguments, [
@@ -82,23 +83,23 @@ describe( 'MigrateCategoriesTask', () => {
 		} );
 
 		it( 'should create map of source and migrated category IDs', async t => {
-			const task: ITask<MigratorContext> = new MigrateCategoriesTask();
+			const task: ITask<MigratorContext> = new MigrateCategoriesTask( migratedCategoriesRepositoryFake );
 
 			t.mock.method( clientFake, 'createCategory', ( category: ICKBoxCategory ) => (
 				Promise.resolve( 'target-id-' + category.name )
 			) );
 
-			await task.run( context, abortController );
+			const addMigratedCategoryMock: Mock<Function> = t.mock.method( migratedCategoriesRepositoryFake, 'addMigratedCategory' );
 
-			const categoryMap: Map<string, string> = context.getInstance( 'MigratedCategoriesMap' );
+			await task.run( context, uiFake, loggerFake, abortController );
 
-			assert.equal( categoryMap.size, 2 );
-			assert.equal( categoryMap.get( 'c-1' ), 'target-id-Foo' );
-			assert.equal( categoryMap.get( 'c-2' ), 'target-id-Bar' );
+			assert.equal( addMigratedCategoryMock.mock.callCount(), 2 );
+			assert.deepEqual( addMigratedCategoryMock.mock.calls[ 0 ].arguments, [ 'c-1', 'target-id-Foo' ] );
+			assert.deepEqual( addMigratedCategoryMock.mock.calls[ 1 ].arguments, [ 'c-2', 'target-id-Bar' ] );
 		} );
 
 		it( 'should notify about created categories', async t => {
-			const task: ITask<MigratorContext> = new MigrateCategoriesTask();
+			const task: ITask<MigratorContext> = new MigrateCategoriesTask( migratedCategoriesRepositoryFake );
 
 			t.mock.method( clientFake, 'createCategory', ( category: ICKBoxCategory ) => (
 				Promise.resolve( 'target-id-' + category.name )
@@ -107,7 +108,7 @@ describe( 'MigrateCategoriesTask', () => {
 			const infoLogMock: Mock<Function> = t.mock.method( loggerFake, 'info' );
 			const spinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner' );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( infoLogMock.mock.callCount(), 4 );
 			assert.deepEqual( infoLogMock.mock.calls[ 0 ].arguments, [ 'Creating category', { sourceCategoryId: 'c-1' } ] );

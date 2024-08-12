@@ -9,11 +9,16 @@ import VerifyCKBoxConnectionTask from '@src/tasks/VerifyCKBoxConnectionTask';
 import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import CKBoxClient, { ICKBoxClient } from '@src/CKBoxClient';
-import { createCKBoxClientFake } from '../utils/_fakes';
+import { IUI } from '@src/UI';
+import { ILogger } from '@src/Logger';
+
+import { createCKBoxClientFake, createLoggerFake, createUIFake } from '../utils/_fakes';
 
 describe( 'VerifyCKBoxConnectionTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
+		let uiFake: IUI;
+		let loggerFake: ILogger;
 		let clientFake: ICKBoxClient;
 		let abortController: AbortController;
 
@@ -21,6 +26,8 @@ describe( 'VerifyCKBoxConnectionTask', () => {
 			context = new MigratorContext();
 			clientFake = createCKBoxClientFake();
 			abortController = new AbortController();
+			uiFake = createUIFake();
+			loggerFake = createLoggerFake();
 
 			context.setInstance( clientFake, CKBoxClient.name );
 		} );
@@ -30,7 +37,7 @@ describe( 'VerifyCKBoxConnectionTask', () => {
 
 			const verifyConnectionMock: Mock<Function> = t.mock.method( clientFake, 'verifyConnection' );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( verifyConnectionMock.mock.callCount(), 1 );
 		} );

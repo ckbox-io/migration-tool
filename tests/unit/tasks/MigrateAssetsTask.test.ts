@@ -10,19 +10,23 @@ import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceAsset, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
 import CKBoxClient, { ICKBoxClient } from '@src/CKBoxClient';
-import UI, { IUI } from '@src/UI';
-import Logger, { ILogger } from '@src/Logger';
+import { IUI } from '@src/UI';
+import { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';
 import { IURLMappingWriter } from '@src/URLMappingWriter';
 
 import {
 	createCKBoxClientFake,
 	createLoggerFake,
+	createMigratedCategoriesRepositoryFake,
+	createMigratedFoldersRepositoryFake,
 	createSourceStorageAdapterFake,
 	createUIFake,
 	createURLMappingWriterFake
 } from '../utils/_fakes';
 import { PassThrough } from 'node:stream';
+import { IMigratedFoldersRepository } from '@src/repositories/MigratedFoldersRepository';
+import { IMigratedCategoriesRepository } from '@src/repositories/MigratedCategoriesRepository';
 
 describe( 'MigrateAssetsTask', () => {
 	describe( 'run()', () => {
@@ -33,8 +37,9 @@ describe( 'MigrateAssetsTask', () => {
 		let loggerFake: ILogger;
 		let _urlMappingWriterFake: IURLMappingWriter;
 		let abortController: AbortController;
-		let migratedCategoriesMap: Map<string, string>;
-		let migratedFoldersMap: Map<string, Map<string, string>>;
+		let migratedFoldersRepositoryFake: IMigratedFoldersRepository;
+		let migratedCategoriesRepositoryFake: IMigratedCategoriesRepository;
+		let task: ITask<MigratorContext>;
 
 		beforeEach( () => {
 			context = new MigratorContext();
@@ -45,20 +50,16 @@ describe( 'MigrateAssetsTask', () => {
 			_urlMappingWriterFake = createURLMappingWriterFake();
 			abortController = new AbortController();
 
-			migratedCategoriesMap = new Map( [ [ 'c-1', 'migrated-category-id-c-1' ] ] );
-			migratedFoldersMap = new Map( [ [ 'c-1', new Map( [ [ 'f-1', 'migrated-folder-id-f-1' ] ] ) ] ] );
+			migratedFoldersRepositoryFake = createMigratedFoldersRepositoryFake();
+			migratedCategoriesRepositoryFake = createMigratedCategoriesRepositoryFake();
 
 			context.setInstance( clientFake, CKBoxClient.name );
-			context.setInstance( uiFake, UI.name );
-			context.setInstance( loggerFake, Logger.name );
 			context.setInstance( adapterFake, 'Adapter' );
-			context.setInstance( migratedCategoriesMap, 'MigratedCategoriesMap' );
-			context.setInstance( migratedFoldersMap, 'MigratedFoldersMap' );
+
+			task = new MigrateAssetsTask( _urlMappingWriterFake, migratedCategoriesRepositoryFake, migratedFoldersRepositoryFake );
 		} );
 
 		it( 'should migrate assets of a category', async t => {
-			const task: ITask<MigratorContext> = new MigrateAssetsTask( _urlMappingWriterFake );
-
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
 			const uploadAssetMock: Mock<Function> = t.mock.method(
@@ -88,7 +89,7 @@ describe( 'MigrateAssetsTask', () => {
 
 			context.setInstance( migrationPlan );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( uploadAssetMock.mock.callCount(), 1 );
 			assert.deepEqual( uploadAssetMock.mock.calls[ 0 ].arguments, [ {
@@ -102,8 +103,6 @@ describe( 'MigrateAssetsTask', () => {
 		} );
 
 		it( 'should migrate assets of a folder', async t => {
-			const task: ITask<MigratorContext> = new MigrateAssetsTask( _urlMappingWriterFake );
-
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
 			const uploadAssetMock: Mock<Function> = t.mock.method(
@@ -133,7 +132,7 @@ describe( 'MigrateAssetsTask', () => {
 
 			context.setInstance( migrationPlan );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( uploadAssetMock.mock.callCount(), 1 );
 			assert.deepEqual( uploadAssetMock.mock.calls[ 0 ].arguments, [ {
@@ -147,8 +146,6 @@ describe( 'MigrateAssetsTask', () => {
 		} );
 
 		it( 'should notify about the progress', async t => {
-			const task: ITask<MigratorContext> = new MigrateAssetsTask( _urlMappingWriterFake );
-
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
 			t.mock.method(
@@ -188,7 +185,7 @@ describe( 'MigrateAssetsTask', () => {
 
 			context.setInstance( migrationPlan );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( uiSpinnerMock.mock.callCount(), 2 );
 			assert.deepEqual( uiSpinnerMock.mock.calls[ 0 ].arguments, [ 'Copying assets: 0% (processing file 1 of 2)' ] );

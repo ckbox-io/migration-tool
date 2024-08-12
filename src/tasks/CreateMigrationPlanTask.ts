@@ -6,7 +6,7 @@ import { ISourceStorageAdapter } from '../SourceStorageAdapter';
 import MigratorContext from '../MigratorContext';
 import { ITask } from '../Pipeline';
 import MigrationPlan from '../MigrationPlan';
-import UI, { IUI } from '../UI';
+import { IUI } from '../UI';
 
 export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 	public readonly processingMessage: string = 'Creating migration plan';
@@ -17,9 +17,8 @@ export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 
 	public constructor( private _urlMappingFilename: string ) {}
 
-	public async run( context: MigratorContext ): Promise<void> {
+	public async run( context: MigratorContext, ui: IUI ): Promise<void> {
 		const adapter: ISourceStorageAdapter = context.getInstance( 'Adapter' );
-		const ui: IUI = context.getInstance( UI );
 
 		const { categories, assets } = await adapter.prepareMigrationPlan();
 		const migrationPlan: MigrationPlan = new MigrationPlan( categories, assets );

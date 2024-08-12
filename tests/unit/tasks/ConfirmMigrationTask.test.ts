@@ -8,22 +8,23 @@ import assert from 'node:assert/strict';
 import ConfirmMigrationTask from '@src/tasks/ConfirmMigrationTask';
 import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
-import UI, { IUI } from '@src/UI';
+import { IUI } from '@src/UI';
 
-import { createUIFake } from '../utils/_fakes';
+import { createLoggerFake, createUIFake } from '../utils/_fakes';
+import { ILogger } from '@src/Logger';
 
 describe( 'ConfirmMigrationTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
 		let uiFake: IUI;
+		let loggerFake: ILogger;
 		let abortController: AbortController;
 
 		beforeEach( () => {
 			context = new MigratorContext();
 			uiFake = createUIFake();
+			loggerFake = createLoggerFake();
 			abortController = new AbortController();
-
-			context.setInstance( uiFake, UI.name );
 		} );
 
 		it( 'should print prompt', async t => {
@@ -31,7 +32,7 @@ describe( 'ConfirmMigrationTask', () => {
 
 			const promptMock: Mock<Function> = t.mock.method( uiFake, 'prompt', () => 'y' );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( promptMock.mock.callCount(), 1 );
 			assert.deepEqual( promptMock.mock.calls[ 0 ].arguments, [ 'Do you want to start the migration? (Y/n) ' ] );
@@ -42,7 +43,7 @@ describe( 'ConfirmMigrationTask', () => {
 
 			t.mock.method( uiFake, 'prompt', () => 'y' );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( abortController.signal.aborted, false );
 		} );
@@ -52,7 +53,7 @@ describe( 'ConfirmMigrationTask', () => {
 
 			t.mock.method( uiFake, 'prompt', () => 'n' );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( abortController.signal.aborted, true );
 		} );

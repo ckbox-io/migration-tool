@@ -8,6 +8,8 @@ import { AdapterFactory, IAdapterFactory } from './AdapterFactory';
 import UI, { IUI } from './UI';
 import Logger from './Logger';
 import Pipeline, { IPipeline } from './Pipeline';
+import MigratedCategoriesRepository, { IMigratedCategoriesRepository } from './repositories/MigratedCategoriesRepository';
+import MigratedFoldersRepository, { IMigratedFoldersRepository } from './repositories/MigratedFoldersRepository';
 import URLMappingWriter from './URLMappingWriter';
 import LoadConfigTask from './tasks/LoadConfigTask';
 import CreateAdapterTask from './tasks/CreateAdapterTask';
@@ -27,6 +29,9 @@ import MigrateAssetsTask from './tasks/MigrateAssetsTask';
 	const adapterFactory: IAdapterFactory = new AdapterFactory();
 	const urlMappingWriter: URLMappingWriter = new URLMappingWriter();
 
+	const migratedCategoriesRepository: IMigratedCategoriesRepository = new MigratedCategoriesRepository();
+	const migratedFoldersRepository: IMigratedFoldersRepository = new MigratedFoldersRepository();
+
 	// TODO: Print migrator version.
 
 	const migrationPipeline: IPipeline<IMigratorContext> = new Pipeline( [
@@ -38,16 +43,13 @@ import MigrateAssetsTask from './tasks/MigrateAssetsTask';
 		new CreateMigrationPlanTask( urlMappingWriter.filename ),
 		new ConfirmMigrationTask(),
 		// TODO: Skip this task when the --dry-run flag is set
-		new MigrateCategoriesTask(),
-		new MigrateFoldersTask(),
-		new MigrateAssetsTask( urlMappingWriter )
-	], ui );
+		new MigrateCategoriesTask( migratedCategoriesRepository ),
+		new MigrateFoldersTask( migratedCategoriesRepository, migratedFoldersRepository ),
+		new MigrateAssetsTask( urlMappingWriter, migratedCategoriesRepository, migratedFoldersRepository )
+	], ui, logger );
 
 	try {
 		const context: IMigratorContext = new MigratorContext();
-
-		context.setInstance( ui );
-		context.setInstance( logger );
 
 		await migrationPipeline.run( context );
 

@@ -9,14 +9,16 @@ import CreateMigrationPlanTask from '@src/tasks/CreateMigrationPlanTask';
 import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
-import { createSourceStorageAdapterFake, createUIFake } from '../utils/_fakes';
+import { createLoggerFake, createSourceStorageAdapterFake, createUIFake } from '../utils/_fakes';
 import MigrationPlan from '@src/MigrationPlan';
-import UI, { IUI } from '@src/UI';
+import { IUI } from '@src/UI';
+import { ILogger } from '@src/Logger';
 
 describe( 'CreateMigrationPlanTask', () => {
 	describe( 'run()', () => {
 		let context: MigratorContext;
 		let sourceStorageAdapterFake: ISourceStorageAdapter;
+		let loggerFake: ILogger;
 		let uiFake: IUI;
 		let migrationPlan: IMigrationPlan;
 		let abortController: AbortController;
@@ -27,6 +29,7 @@ describe( 'CreateMigrationPlanTask', () => {
 			context = new MigratorContext();
 			sourceStorageAdapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
+			loggerFake = createLoggerFake();
 			abortController = new AbortController();
 
 			migrationPlan = {
@@ -63,7 +66,6 @@ describe( 'CreateMigrationPlanTask', () => {
 			};
 
 			context.setInstance( sourceStorageAdapterFake, 'Adapter' );
-			context.setInstance( uiFake, UI.name );
 		} );
 
 		it( 'should create a migration plan', async t => {
@@ -73,7 +75,7 @@ describe( 'CreateMigrationPlanTask', () => {
 				Promise.resolve( migrationPlan )
 			) );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			const migrationPlanFromContext: IMigrationPlan = context.getInstance( MigrationPlan );
 
@@ -90,7 +92,7 @@ describe( 'CreateMigrationPlanTask', () => {
 
 			const uiInfoMock = t.mock.method( uiFake, 'info', () => {} );
 
-			await task.run( context, abortController );
+			await task.run( context, uiFake, loggerFake, abortController );
 
 			assert.equal( uiInfoMock.mock.callCount(), 1 );
 			assert.deepEqual( uiInfoMock.mock.calls[ 0 ].arguments, [

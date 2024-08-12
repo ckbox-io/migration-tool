@@ -6,8 +6,9 @@ import { IMigrationPlan } from '../SourceStorageAdapter';
 import CKBoxClient, { ICKBoxClient } from '../CKBoxClient';
 import MigratorContext from '../MigratorContext';
 import { ITask } from '../Pipeline';
-import Logger, { ILogger } from '../Logger';
-import UI, { IUI } from '../UI';
+import { ILogger } from '../Logger';
+import { IUI } from '../UI';
+import { IMigratedCategoriesRepository } from '../repositories/MigratedCategoriesRepository';
 
 export default class MigrateCategoriesTask implements ITask<MigratorContext> {
 	public readonly processingMessage: string = 'Migrating categories';
@@ -16,13 +17,11 @@ export default class MigrateCategoriesTask implements ITask<MigratorContext> {
 
 	public readonly failureMessage: string = 'Categories migration failed';
 
-	public async run( context: MigratorContext ): Promise<void> {
+	public constructor( private readonly _migratedCategoriesRepository: IMigratedCategoriesRepository ) {}
+
+	public async run( context: MigratorContext, ui: IUI, logger: ILogger ): Promise<void> {
 		const client: ICKBoxClient = context.getInstance( CKBoxClient );
 		const migrationPlan: IMigrationPlan = context.getInstance( 'MigrationPlan' );
-		const logger: ILogger = context.getInstance( Logger );
-		const ui: IUI = context.getInstance( UI );
-
-		const migratedCategoriesMap: Map<string, string> = new Map();
 
 		for ( const category of migrationPlan.categories ) {
 			logger.info( 'Creating category', { sourceCategoryId: category.id } );
@@ -35,9 +34,7 @@ export default class MigrateCategoriesTask implements ITask<MigratorContext> {
 
 			logger.info( 'Category created', { sourceCategoryId: category.id, migratedCategoryId } );
 
-			migratedCategoriesMap.set( category.id, migratedCategoryId );
+			this._migratedCategoriesRepository.addMigratedCategory( category.id, migratedCategoryId );
 		}
-
-		context.setInstance( migratedCategoriesMap, 'MigratedCategoriesMap' );
 	}
 }
