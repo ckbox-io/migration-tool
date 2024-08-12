@@ -173,7 +173,7 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			const content: Buffer = Buffer.from( 'Example file' );
 			const filename: string = 'test-asset.txt';
 
-			const assetId: string = await client.uploadAsset( {
+			const { id: assetId } = await client.uploadAsset( {
 				name: filename,
 				stream: Readable.from( content ),
 				location: { categoryId }
@@ -197,7 +197,7 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			const content: Buffer = Buffer.from( 'Example file' );
 			const filename: string = 'test-asset.txt';
 
-			const assetId: string = await client.uploadAsset( {
+			const { id: assetId } = await client.uploadAsset( {
 				name: filename,
 				stream: Readable.from( content ),
 				location: { folderId }

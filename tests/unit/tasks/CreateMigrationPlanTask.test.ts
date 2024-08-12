@@ -21,6 +21,8 @@ describe( 'CreateMigrationPlanTask', () => {
 		let migrationPlan: IMigrationPlan;
 		let abortController: AbortController;
 
+		const urlMappingFilePath: string = 'example-url-mapping.json';
+
 		beforeEach( () => {
 			context = new MigratorContext();
 			sourceStorageAdapterFake = createSourceStorageAdapterFake();
@@ -65,7 +67,7 @@ describe( 'CreateMigrationPlanTask', () => {
 		} );
 
 		it( 'should create a migration plan', async t => {
-			const task: ITask<MigratorContext> = new CreateMigrationPlanTask();
+			const task: ITask<MigratorContext> = new CreateMigrationPlanTask( urlMappingFilePath );
 
 			t.mock.method( sourceStorageAdapterFake, 'prepareMigrationPlan', () => (
 				Promise.resolve( migrationPlan )
@@ -80,7 +82,7 @@ describe( 'CreateMigrationPlanTask', () => {
 		} );
 
 		it( 'should print migration plan summary', async t => {
-			const task: ITask<MigratorContext> = new CreateMigrationPlanTask();
+			const task: ITask<MigratorContext> = new CreateMigrationPlanTask( urlMappingFilePath );
 
 			t.mock.method( sourceStorageAdapterFake, 'prepareMigrationPlan', () => (
 				Promise.resolve( migrationPlan )
@@ -96,8 +98,7 @@ describe( 'CreateMigrationPlanTask', () => {
 				' - create asset categories in CKBox (1 category will be created: Category)\n' +
 				' - copy folder structure to CKBox (2 folders will be created)\n' +
 				' - copy files to CKBox (1 file will be copied)\n' +
-				' - save the map of old and new file URLs'
-				// TODO: Path to map file
+				' - save the map of old and new file URLs (the map will be saved in example-url-mapping.json)\n'
 			] );
 		} );
 	} );

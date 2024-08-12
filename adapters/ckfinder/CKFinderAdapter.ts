@@ -9,7 +9,7 @@ import { validateOrReject } from 'class-validator';
 import fetch, { Response } from 'node-fetch';
 
 import { CKFinderConfig } from './CKFinderConfig';
-import { CKFinderGetFilesResponse, CKFinderGetFoldersResponse, CKFinderInitResponse } from './CKFinderResponses';
+import { CKFinderGetFilesResponse, CKFinderGetFileURLResponse, CKFinderGetFoldersResponse, CKFinderInitResponse } from './CKFinderResponses';
 import path, { ParsedPath } from 'path';
 
 export default class CKFinderAdapter implements ISourceStorageAdapter {
@@ -114,14 +114,18 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		for ( const asset of assetsResponse.files ) {
 			const parsedPath: ParsedPath = path.parse( asset.name );
 
+			const getFileUrlResponse: CKFinderGetFileURLResponse = await this._fetch(
+				{ command: 'GetFileUrl', type: category.id, currentFolder: folder.id, fileName: asset.name },
+				CKFinderGetFileURLResponse
+			);
+
 			assets.push( {
 				id: `${ folder.id }${ asset.name }`,
 				name: parsedPath.name,
 				extension: parsedPath.ext.substring( 1 ),
 				// TODO: Use URL constructor.
 				downloadUrl: `${ this._config.connectorPath }?command=Proxy&type=${ category.id }&currentFolder=${ folder.id }&fileName=${ asset.name }`,
-				// TODO: Use GetFileURL command
-				downloadUrlToReplace: `${ category.id }${ folder.id }${ asset.name }`,
+				downloadUrlToReplace: getFileUrlResponse.url,
 				location: {
 					categoryId: category.id,
 					// TODO: Add test for this scenario.

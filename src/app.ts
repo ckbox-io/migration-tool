@@ -8,6 +8,7 @@ import { AdapterFactory, IAdapterFactory } from './AdapterFactory';
 import UI, { IUI } from './UI';
 import Logger from './Logger';
 import Pipeline, { IPipeline } from './Pipeline';
+import URLMappingWriter from './URLMappingWriter';
 import LoadConfigTask from './tasks/LoadConfigTask';
 import CreateAdapterTask from './tasks/CreateAdapterTask';
 import CreateCKBoxClientTask from './tasks/CreateCKBoxClientTask';
@@ -24,6 +25,7 @@ import MigrateAssetsTask from './tasks/MigrateAssetsTask';
 	const logger: Logger = new Logger( 'migrator' );
 	const ui: IUI = await UI.create();
 	const adapterFactory: IAdapterFactory = new AdapterFactory();
+	const urlMappingWriter: URLMappingWriter = new URLMappingWriter();
 
 	// TODO: Print migrator version.
 
@@ -33,12 +35,12 @@ import MigrateAssetsTask from './tasks/MigrateAssetsTask';
 		new CreateCKBoxClientTask(),
 		new VerifyAdapterConnectionTask(),
 		new VerifyCKBoxConnectionTask(),
-		new CreateMigrationPlanTask(),
+		new CreateMigrationPlanTask( urlMappingWriter.filename ),
 		new ConfirmMigrationTask(),
 		// TODO: Skip this task when the --dry-run flag is set
 		new MigrateCategoriesTask(),
 		new MigrateFoldersTask(),
-		new MigrateAssetsTask()
+		new MigrateAssetsTask( urlMappingWriter )
 	], ui );
 
 	try {

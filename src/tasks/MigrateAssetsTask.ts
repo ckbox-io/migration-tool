@@ -2,14 +2,14 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { IMigrationPlan } from '../SourceStorageAdapter';
+import { ISourceStorageAdapter } from '../SourceStorageAdapter';
 import CKBoxClient, { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
 import MigratorContext from '../MigratorContext';
-import { ISourceStorageAdapter } from '../SourceStorageAdapter';
 import { ITask } from '../Pipeline';
 import Logger, { ILogger } from '../Logger';
 import UI, { IUI } from '../UI';
 import MigrationPlan from '../MigrationPlan';
+import { IURLMappingWriter } from '../URLMappingWriter';
 
 export default class MigrateAssetsTask implements ITask<MigratorContext> {
 	public readonly processingMessage: string = 'Migrating assets';
@@ -17,6 +17,8 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 	public readonly successMessage: string = 'Assets migrated';
 
 	public readonly failureMessage: string = 'Assets migration failed';
+
+	public constructor( private _urlMappingWriter: IURLMappingWriter ) {}
 
 	public async run( context: MigratorContext ): Promise<void> {
 		const client: ICKBoxClient = context.getInstance( CKBoxClient );
@@ -50,17 +52,17 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 				const location: ICKBoxLocation = _getMigratedLocation( sourceCategoryId, sourceFolderId );
 
 				const stream = await adapter.getAsset( sourceAsset.downloadUrl );
-				const migratedAssetId: string = await client.uploadAsset( {
+				const { id: migratedAssetId, url } = await client.uploadAsset( {
 					name: `${ sourceAsset.name }.${ sourceAsset.extension }`,
 					location,
 					stream
 				} );
 
 				logger.info( 'Asset migrated.', { sourceAssetId: sourceAsset.id, migratedAssetId } );
-			} catch ( error ) {
-				console.log( error );
 
-				logger.error( `Asset ${ sourceAsset.name } migration failed.`, error );
+				this._urlMappingWriter.write( sourceAsset.downloadUrlToReplace, url );
+			} catch ( error ) {
+				logger.error( 'Asset migration failed.', { sourceAssetId: sourceAsset.id, error } );
 
 				failing = true;
 			}

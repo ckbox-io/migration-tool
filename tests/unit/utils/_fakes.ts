@@ -11,6 +11,7 @@ import { ICKBoxClient } from '@src/CKBoxClient';
 import { plainToInstance } from 'class-transformer';
 import { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';
+import { IURLMappingWriter } from '@src/URLMappingWriter';
 
 export function createUIFake(): IUI {
 	return {
@@ -71,6 +72,15 @@ export function createCKBoxClientFake(): ICKBoxClient {
 		verifyConnection: () => Promise.resolve(),
 		createCategory: () => Promise.resolve( '12345678901234567890' ),
 		createFolder: () => Promise.resolve( '12345678901234567890' ),
-		uploadAsset: () => Promise.resolve( '12345678901234567890' )
+		uploadAsset: () => Promise.resolve( {
+			id: '12345678901234567890',
+			url: 'http://localhost:8080/asset/12345678901234567890'
+		} )
+	};
+}
+
+export function createURLMappingWriterFake(): IURLMappingWriter {
+	return {
+		write: () => {}
 	};
 }

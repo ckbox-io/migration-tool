@@ -38,6 +38,12 @@ export class CKFinderGetFoldersResponse {
 	public readonly folders: CKFinderChildFolder[];
 }
 
+export class CKFinderGetFileURLResponse {
+	@IsString()
+	@IsDefined()
+	public readonly url: string;
+}
+
 export class CKFinderCurrentFolder {
 	@IsString()
 	@IsDefined()

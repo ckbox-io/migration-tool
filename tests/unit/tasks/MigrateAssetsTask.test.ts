@@ -13,7 +13,15 @@ import CKBoxClient, { ICKBoxClient } from '@src/CKBoxClient';
 import UI, { IUI } from '@src/UI';
 import Logger, { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';
-import { createCKBoxClientFake, createLoggerFake, createSourceStorageAdapterFake, createUIFake } from '../utils/_fakes';
+import { IURLMappingWriter } from '@src/URLMappingWriter';
+
+import {
+	createCKBoxClientFake,
+	createLoggerFake,
+	createSourceStorageAdapterFake,
+	createUIFake,
+	createURLMappingWriterFake
+} from '../utils/_fakes';
 import { PassThrough } from 'node:stream';
 
 describe( 'MigrateAssetsTask', () => {
@@ -23,6 +31,7 @@ describe( 'MigrateAssetsTask', () => {
 		let adapterFake: ISourceStorageAdapter;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
+		let _urlMappingWriterFake: IURLMappingWriter;
 		let abortController: AbortController;
 		let migratedCategoriesMap: Map<string, string>;
 		let migratedFoldersMap: Map<string, Map<string, string>>;
@@ -33,6 +42,7 @@ describe( 'MigrateAssetsTask', () => {
 			adapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
+			_urlMappingWriterFake = createURLMappingWriterFake();
 			abortController = new AbortController();
 
 			migratedCategoriesMap = new Map( [ [ 'c-1', 'migrated-category-id-c-1' ] ] );
@@ -47,7 +57,7 @@ describe( 'MigrateAssetsTask', () => {
 		} );
 
 		it( 'should migrate assets of a category', async t => {
-			const task: ITask<MigratorContext> = new MigrateAssetsTask();
+			const task: ITask<MigratorContext> = new MigrateAssetsTask( _urlMappingWriterFake );
 
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
@@ -92,7 +102,7 @@ describe( 'MigrateAssetsTask', () => {
 		} );
 
 		it( 'should migrate assets of a folder', async t => {
-			const task: ITask<MigratorContext> = new MigrateAssetsTask();
+			const task: ITask<MigratorContext> = new MigrateAssetsTask( _urlMappingWriterFake );
 
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
@@ -137,7 +147,7 @@ describe( 'MigrateAssetsTask', () => {
 		} );
 
 		it( 'should notify about the progress', async t => {
-			const task: ITask<MigratorContext> = new MigrateAssetsTask();
+			const task: ITask<MigratorContext> = new MigrateAssetsTask( _urlMappingWriterFake );
 
 			const stream: NodeJS.ReadableStream = new PassThrough();
 

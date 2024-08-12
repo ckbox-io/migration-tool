@@ -15,6 +15,8 @@ export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 
 	public readonly failureMessage: string = 'Migration plan creation failed';
 
+	public constructor( private _urlMappingFilename: string ) {}
+
 	public async run( context: MigratorContext ): Promise<void> {
 		const adapter: ISourceStorageAdapter = context.getInstance( 'Adapter' );
 		const ui: IUI = context.getInstance( UI );
@@ -35,7 +37,7 @@ export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 			` - create asset categories in CKBox (${ categoriesString } will be created: ${ categoriesNames })\n` +
 			` - copy folder structure to CKBox (${ foldersString } will be created)\n` +
 			` - copy files to CKBox (${ assetsString } will be copied)\n` +
-			' - save the map of old and new file URLs'
+			` - save the map of old and new file URLs (the map will be saved in ${ this._urlMappingFilename })\n`
 		);
 
 		context.setInstance( migrationPlan );

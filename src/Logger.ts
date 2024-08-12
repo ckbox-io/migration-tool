@@ -8,7 +8,7 @@ import { unlink } from 'node:fs/promises';
 export interface ILogger {
 	info( message: string, data?: Record<string, unknown> ): void;
 	warn( message: string, data?: Record<string, unknown> ): void;
-	error( message: string, error?: Error ): void;
+	error( message: string, data?: Record<string, unknown> | Error ): void;
 }
 
 export default class Logger implements ILogger {
@@ -34,8 +34,8 @@ export default class Logger implements ILogger {
 		this._log( 'warn', message, data );
 	}
 
-	public error( message: string, error?: Error ): void {
-		this._log( 'error', message, error );
+	public error( message: string, data?: Record<string, unknown> | Error ): void {
+		this._log( 'error', message, data );
 	}
 
 	public child( name: string ): ILogger {
