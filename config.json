@@ -12,10 +12,9 @@
 	},
 	"ckbox": {
 		"accessCredentials": {
-			"environmentId": "env-id-0000000000000",
-			"secret": "<SECRET>"
+			"environmentId": "***REMOVED***",
+			"secret": "***REMOVED***"
 		},
-		"workspaceId": "workspace-id-0000000",
-		"serviceOrigin": "https://api.ckbox.io"
+		"serviceOrigin": "https://ckbox.cke-cs-dev.com"
 	}
 }

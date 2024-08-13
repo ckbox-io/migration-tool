@@ -7,14 +7,14 @@ import jwt from 'jsonwebtoken';
 import { CKBoxConfig } from './Config';
 import { blob } from 'node:stream/consumers';
 
-export interface ICBoxClient {
+export interface ICKBoxClient {
 	verifyConnection(): Promise<void>;
 
 	createCategory( category: ICKBoxCategory ): Promise<string>;
 
 	createFolder( folder: ICKBoxFolder ): Promise<string>;
 
-	uploadAsset( asset: ICKBoxAsset ): Promise<string>;
+	uploadAsset( asset: ICKBoxAsset ): Promise<ICKBoxUploadResponse>;
 }
 
 export interface ICKBoxCategory {
@@ -35,11 +35,15 @@ export interface ICKBoxLocation {
 export interface ICKBoxAsset {
 	name: string;
 	location: ICKBoxLocation;
-	size: number;
 	stream: NodeJS.ReadableStream;
 }
 
-export default class CKBoxClient implements ICBoxClient {
+export interface ICKBoxUploadResponse {
+	id: string;
+	url: string;
+}
+
+export default class CKBoxClient implements ICKBoxClient {
 	private _token: string;
 
 	public constructor( private _config: CKBoxConfig ) {
@@ -105,7 +109,7 @@ export default class CKBoxClient implements ICBoxClient {
 		return ( await response.json() as { id: string } ).id;
 	}
 
-	public async uploadAsset( asset: ICKBoxAsset ): Promise<string> {
+	public async uploadAsset( asset: ICKBoxAsset ): Promise<ICKBoxUploadResponse> {
 		const { name: filename, location: target, stream } = asset;
 
 		const formData = new FormData();
@@ -130,7 +134,9 @@ export default class CKBoxClient implements ICBoxClient {
 			);
 		}
 
-		return ( await response.json() as { id: string } ).id;
+		const responseData: Record<string, string> = await response.json() as Record<string, string>;
+
+		return { id: responseData.id, url: responseData.url };
 	}
 
 	private async _fetch(

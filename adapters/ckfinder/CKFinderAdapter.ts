@@ -9,7 +9,7 @@ import { validateOrReject } from 'class-validator';
 import fetch, { Response } from 'node-fetch';
 
 import { CKFinderConfig } from './CKFinderConfig';
-import { CKFinderGetFilesResponse, CKFinderGetFoldersResponse, CKFinderInitResponse } from './CKFinderResponses';
+import { CKFinderGetFilesResponse, CKFinderGetFileURLResponse, CKFinderGetFoldersResponse, CKFinderInitResponse } from './CKFinderResponses';
 import path, { ParsedPath } from 'path';
 
 export default class CKFinderAdapter implements ISourceStorageAdapter {
@@ -34,7 +34,7 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		}
 	}
 
-	public async analyzeStorage(): Promise<IMigrationPlan> {
+	public async prepareMigrationPlan(): Promise<IMigrationPlan> {
 		const categories: ISourceCategory[] = await this._getCategories();
 		const assets: ISourceAsset[] = await this._getAssets( categories );
 
@@ -44,9 +44,8 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		};
 	}
 
-	public getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
-		// Download the asset from the source storage.
-		throw new Error( 'Not implemented' );
+	public async getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
+		return await this._fetchStream( downloadUrl );
 	}
 
 	private async _getCategories(): Promise<ISourceCategory[]> {
@@ -115,16 +114,22 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		for ( const asset of assetsResponse.files ) {
 			const parsedPath: ParsedPath = path.parse( asset.name );
 
+			const getFileUrlResponse: CKFinderGetFileURLResponse = await this._fetch(
+				{ command: 'GetFileUrl', type: category.id, currentFolder: folder.id, fileName: asset.name },
+				CKFinderGetFileURLResponse
+			);
+
 			assets.push( {
 				id: `${ folder.id }${ asset.name }`,
 				name: parsedPath.name,
 				extension: parsedPath.ext.substring( 1 ),
 				// TODO: Use URL constructor.
 				downloadUrl: `${ this._config.connectorPath }?command=Proxy&type=${ category.id }&currentFolder=${ folder.id }&fileName=${ asset.name }`,
-				downloadUrlToReplace: `${ category.id }${ folder.id }${ asset.name }`,
+				downloadUrlToReplace: getFileUrlResponse.url,
 				location: {
 					categoryId: category.id,
-					folderId: folder.id
+					// TODO: Add test for this scenario.
+					folderId: folder.id === '/' ? undefined : folder.id
 				}
 			} );
 		}
@@ -134,6 +139,16 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		}
 
 		return assets;
+	}
+
+	private async _fetchStream( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
+		const response: Response = await fetch( downloadUrl, { headers: this._config.authentication.headers } );
+
+		if ( !response.ok ) {
+			throw new Error( `Failed to fetch data from ${ downloadUrl }. Status ${ response.status }. ${ await response.text() }` );
+		}
+
+		return response.body;
 	}
 
 	private async _fetch<T extends object>( parameters: Record<string, string>, responseType: new () => T ): Promise<T> {
@@ -152,9 +167,6 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		try {
 			await validateOrReject( deserializedResponse );
 		} catch ( error ) {
-			// TODO: Use logger.
-			console.log( `Invalid response for ${ url } request.` );
-
 			throw error;
 		}
 

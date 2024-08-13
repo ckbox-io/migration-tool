@@ -5,6 +5,9 @@
     "rootDir": "./src",
     "resolveJsonModule": true
   },
+  "paths": {
+    "@ckbox-migrator": ["./dist/index"]
+  },
   "include": [
     "src/**/*",
     "src/config/schema.json"

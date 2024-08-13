@@ -16,7 +16,7 @@ export class AdapterFactory implements IAdapterFactory {
 			return new Adapter();
 		} catch ( error ) {
 			if ( error instanceof Error && ( error as NodeJS.ErrnoException ).code === 'MODULE_NOT_FOUND' ) {
-				throw new Error( `Adapter "${ adapterName }" not found.` );
+				throw new Error( `Adapter "${ adapterName }" not found.`, { cause: error } );
 			}
 
 			throw error;

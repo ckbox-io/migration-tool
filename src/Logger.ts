@@ -3,20 +3,28 @@
  */
 
 import fs, { WriteStream } from 'node:fs';
+import { unlink } from 'node:fs/promises';
 
 export interface ILogger {
 	info( message: string, data?: Record<string, unknown> ): void;
 	warn( message: string, data?: Record<string, unknown> ): void;
-	error( message: string, error?: Error ): void;
+	error( message: string, data?: Record<string, unknown> | Error ): void;
+	child( name: string ): ILogger;
 }
 
 export default class Logger implements ILogger {
 	private _stream: WriteStream;
 
-	public constructor( private _name: string, stream?: WriteStream ) {
-		const filename: string = `ckbox_migrator_${ new Date().toISOString().replace( /:/g, '-' ) }.log`;
+	private _filename: string;
 
-		this._stream = stream ?? fs.createWriteStream( filename, { flags: 'a' } );
+	public constructor( private _name: string, stream?: WriteStream ) {
+		this._filename = `ckbox_migrator_${ new Date().toISOString().replace( /:/g, '-' ) }.log`;
+
+		this._stream = stream ?? fs.createWriteStream( this._filename, { flags: 'a' } );
+	}
+
+	public get filename(): string {
+		return this._filename;
 	}
 
 	public info( message: string, data?: Record<string, unknown> ): void {
@@ -27,12 +35,18 @@ export default class Logger implements ILogger {
 		this._log( 'warn', message, data );
 	}
 
-	public error( message: string, error?: Error ): void {
-		this._log( 'error', message, error );
+	public error( message: string, data?: Record<string, unknown> | Error ): void {
+		this._log( 'error', message, data );
 	}
 
 	public child( name: string ): ILogger {
 		return new Logger( name );
+	}
+
+	public async removeLogFile(): Promise<void> {
+		this._stream.end();
+
+		await unlink( this._filename );
 	}
 
 	private _log( level: string, message: string, data?: Record<string, unknown> | Error ): void {
@@ -47,7 +61,7 @@ export default class Logger implements ILogger {
 		}
 
 		if ( data instanceof Error ) {
-			return ' ' + ( data.stack || data.message );
+			return ' ' + ( data.stack || data.message ) + ( data.cause ? 'Cause: ' + this._formatData( data.cause as Error ) : '' );
 		}
 
 		return ' ' + Object.keys( data ).map( key => `${ key }=${ data[ key ] }` ).join( ', ' );

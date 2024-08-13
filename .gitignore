@@ -17,6 +17,7 @@ pnpm-lock.yaml
 pnpm-*.log*
 .pnpm-*.log*
 npm-debug.log*
+ckbox_mapped_URLs_*.txt
 
 logs
 *.log

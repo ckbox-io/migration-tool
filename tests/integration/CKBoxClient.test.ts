@@ -5,13 +5,13 @@
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import process from 'node:process';
+import { Readable } from 'node:stream';
 
 import { plainToInstance } from 'class-transformer';
 import jwt from 'jsonwebtoken';
 
 import { CKBoxConfig } from '@src/Config';
 import CKBoxClient from '@src/CKBoxClient';
-import { Readable } from 'node:stream';
 
 const CKBOX_API_ORIGIN: string | undefined = process.env.CKBOX_API_ORIGIN;
 const CKBOX_API_SECRET: string | undefined = process.env.CKBOX_API_SECRET;
@@ -173,9 +173,8 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			const content: Buffer = Buffer.from( 'Example file' );
 			const filename: string = 'test-asset.txt';
 
-			const assetId: string = await client.uploadAsset( {
+			const { id: assetId } = await client.uploadAsset( {
 				name: filename,
-				size: content.length,
 				stream: Readable.from( content ),
 				location: { categoryId }
 			} );
@@ -190,7 +189,6 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			assert.equal( responseBody.name, 'test-asset' );
 			assert.equal( responseBody.extension, 'txt' );
 			assert.equal( responseBody.categoryId, categoryId );
-			assert.equal( responseBody.size, content.length );
 		} );
 
 		it( 'should upload an asset to a folder', async () => {
@@ -199,9 +197,8 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			const content: Buffer = Buffer.from( 'Example file' );
 			const filename: string = 'test-asset.txt';
 
-			const assetId: string = await client.uploadAsset( {
+			const { id: assetId } = await client.uploadAsset( {
 				name: filename,
-				size: content.length,
 				stream: Readable.from( content ),
 				location: { folderId }
 			} );
@@ -216,7 +213,6 @@ describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
 			assert.equal( responseBody.name, 'test-asset' );
 			assert.equal( responseBody.extension, 'txt' );
 			assert.equal( responseBody.folderId, folderId );
-			assert.equal( responseBody.size, content.length );
 		} );
 	} );
 } );

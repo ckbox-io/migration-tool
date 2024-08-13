@@ -299,6 +299,7 @@ export default tseslint.config({
 				after: true
 			}
 		],
+		'@typescript-eslint/consistent-generic-constructors': [ 'error', 'type-annotation' ],
 		'@typescript-eslint/func-call-spacing': [ 'error', 'never' ],
 		'@typescript-eslint/keyword-spacing': 'error',
 		'@typescript-eslint/no-array-constructor': 'error',
