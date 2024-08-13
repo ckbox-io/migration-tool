@@ -8,13 +8,12 @@ import {
 	Length,
 	IsString,
 	IsOptional,
-	validateOrReject,
 	IsObject,
 	ValidateNested,
 	ValidationError,
 	IsDefined
 } from 'class-validator';
-import { Type, plainToInstance } from 'class-transformer';
+import { Type } from 'class-transformer';
 import chalk from 'chalk';
 
 export class MigratorConfig {

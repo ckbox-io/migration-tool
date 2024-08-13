@@ -55,7 +55,7 @@ describe( 'ConfirmMigrationTask', () => {
 			assert.equal( abortController.signal.aborted, true );
 		} );
 
-		it( 'should abort migration in dry-run mode', async t => {
+		it( 'should abort migration in dry-run mode', async () => {
 			const task: ITask = new ConfirmMigrationTask( true );
 
 			await task.run( uiFake, loggerFake, abortController );

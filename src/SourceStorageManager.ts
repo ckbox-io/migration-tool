@@ -5,7 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { ISourceStorageAdapter } from "./SourceStorageAdapter";
+import { ISourceStorageAdapter } from './SourceStorageAdapter';
 
 export interface ISourceStorageManager {
 	loadAdapter( adapterName: string ): Promise<void>;

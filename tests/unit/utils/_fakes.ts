@@ -28,7 +28,7 @@ export function createUIFake(): IUI {
 		prompt: () => Promise.resolve( '' ),
 		addIndent: () => {},
 		clearIndent: () => {},
-		stop: () => {},
+		stop: () => {}
 	};
 }
 

@@ -17,7 +17,9 @@ export default class ConfirmMigrationTask implements ITask {
 			abortController.abort();
 
 			return;
-		};
+		}
+
+		;
 
 		const answer: string = await ui.prompt( 'Do you want to start the migration? (Y/n) ' );
 

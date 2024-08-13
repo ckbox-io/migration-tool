@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import MigrateAssetsTask from '@src/tasks/MigrateAssetsTask';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceAsset, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
-import CKBoxClient, { ICKBoxClient } from '@src/CKBoxClient';
+import { ICKBoxClient } from '@src/CKBoxClient';
 import { IUI } from '@src/UI';
 import { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';

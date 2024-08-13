@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 
-import {MigratorConfig} from './Config';
+import { MigratorConfig } from './Config';
 
 export interface IConfigManager {
 	loadConfig(): Promise<void>;
