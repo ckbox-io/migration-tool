@@ -3,15 +3,16 @@
  */
 
 import { IMigrationPlan, ISourceFolder } from '../SourceStorageAdapter';
-import CKBoxClient, { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
-import MigratorContext from '../MigratorContext';
+import { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
 import { ITask } from '../Pipeline';
 import { ILogger } from '../Logger';
 import { IUI } from '../UI';
 import { IMigratedCategoriesRepository } from '../repositories/MigratedCategoriesRepository';
 import { IMigratedFoldersRepository } from '../repositories/MigratedFoldersRepository';
+import { ICKBoxClientManager } from '../CKBoxClientManager';
+import { IMigrationPlanManager } from '../MigrationPlanManager';
 
-export default class MigrateFoldersTask implements ITask<MigratorContext> {
+export default class MigrateFoldersTask implements ITask {
 	public readonly processingMessage: string = 'Migrating folders';
 
 	public readonly successMessage: string = 'Folders migrated';
@@ -19,13 +20,15 @@ export default class MigrateFoldersTask implements ITask<MigratorContext> {
 	public readonly failureMessage: string = 'Folders migration failed';
 
 	public constructor(
+		private readonly _migrationPlanManager: IMigrationPlanManager,
+		private readonly _ckboxClientManager: ICKBoxClientManager,
 		private readonly _migratedCategoriesRepository: IMigratedCategoriesRepository,
 		private readonly _migratedFoldersRepository: IMigratedFoldersRepository
 	) {}
 
-	public async run( context: MigratorContext, ui: IUI, logger: ILogger ): Promise<void> {
-		const client: ICKBoxClient = context.getInstance( CKBoxClient );
-		const migrationPlan: IMigrationPlan = context.getInstance( 'MigrationPlan' );
+	public async run( ui: IUI, logger: ILogger ): Promise<void> {
+		const client: ICKBoxClient = this._ckboxClientManager.getClient();
+		const migrationPlan: IMigrationPlan = this._migrationPlanManager.getMigrationPlan();
 
 		for ( const sourceCategory of migrationPlan.categories ) {
 			const migratedCategoryId: string | null = this._migratedCategoriesRepository.getIdOfMigratedCategory( sourceCategory.id );

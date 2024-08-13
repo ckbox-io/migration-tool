@@ -132,7 +132,7 @@ describe( 'CKFinderAdapter', () => {
 					id: '/Foo/Bar/file.txt',
 					name: 'file',
 					extension: 'txt',
-					downloadUrl: `${ config.connectorPath }?command=Proxy&type=Files&currentFolder=/Foo/Bar/&fileName=file.txt`,
+					downloadUrl: `${ config.connectorPath }?command=Proxy&type=Files&currentFolder=%2FFoo%2FBar%2F&fileName=file.txt`,
 					downloadUrlToReplace: 'http://localhost:8080/userfiles/files/Foo/Bar/file.txt',
 					location: {
 						categoryId: 'Files',

@@ -6,27 +6,35 @@ import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import CreateMigrationPlanTask from '@src/tasks/CreateMigrationPlanTask';
-import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
-import { createLoggerFake, createSourceStorageAdapterFake, createUIFake } from '../utils/_fakes';
-import MigrationPlan from '@src/MigrationPlan';
 import { IUI } from '@src/UI';
 import { ILogger } from '@src/Logger';
+import { IMigrationPlanManager } from '@src/MigrationPlanManager';
+import { ISourceStorageManager } from '@src/SourceStorageManager';
+
+import {
+	createLoggerFake,
+	createMigrationPlanManagerFake,
+	createSourceStorageAdapterFake,
+	createSourceStorageManagerFake,
+	createUIFake
+} from '../utils/_fakes';
 
 describe( 'CreateMigrationPlanTask', () => {
 	describe( 'run()', () => {
-		let context: MigratorContext;
 		let sourceStorageAdapterFake: ISourceStorageAdapter;
 		let loggerFake: ILogger;
 		let uiFake: IUI;
 		let migrationPlan: IMigrationPlan;
 		let abortController: AbortController;
+		let migrationPlanManagerFake: IMigrationPlanManager;
+		let sourceStorageManagerFake: ISourceStorageManager;
+		let task: ITask;
 
 		const urlMappingFilePath: string = 'example-url-mapping.json';
 
 		beforeEach( () => {
-			context = new MigratorContext();
 			sourceStorageAdapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
@@ -65,34 +73,37 @@ describe( 'CreateMigrationPlanTask', () => {
 				]
 			};
 
-			context.setInstance( sourceStorageAdapterFake, 'Adapter' );
+			migrationPlanManagerFake = createMigrationPlanManagerFake();
+			sourceStorageManagerFake = createSourceStorageManagerFake( sourceStorageAdapterFake );
+
+			task = new CreateMigrationPlanTask( migrationPlanManagerFake, sourceStorageManagerFake, urlMappingFilePath );
 		} );
 
 		it( 'should create a migration plan', async t => {
-			const task: ITask<MigratorContext> = new CreateMigrationPlanTask( urlMappingFilePath );
-
 			t.mock.method( sourceStorageAdapterFake, 'prepareMigrationPlan', () => (
 				Promise.resolve( migrationPlan )
 			) );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			const createMigrationPlanMock = t.mock.method( migrationPlanManagerFake, 'createMigrationPlan' );
 
-			const migrationPlanFromContext: IMigrationPlan = context.getInstance( MigrationPlan );
+			await task.run( uiFake, loggerFake, abortController );
 
-			assert.deepEqual( migrationPlanFromContext.categories, migrationPlan.categories );
-			assert.deepEqual( migrationPlanFromContext.assets, migrationPlan.assets );
+			assert.equal( createMigrationPlanMock.mock.callCount(), 1 );
+
+			const [ createdMigrationPlan ] = createMigrationPlanMock.mock.calls[ 0 ].arguments;
+
+			assert.deepEqual( createdMigrationPlan.categories, migrationPlan.categories );
+			assert.deepEqual( createdMigrationPlan.assets, migrationPlan.assets );
 		} );
 
 		it( 'should print migration plan summary', async t => {
-			const task: ITask<MigratorContext> = new CreateMigrationPlanTask( urlMappingFilePath );
-
 			t.mock.method( sourceStorageAdapterFake, 'prepareMigrationPlan', () => (
 				Promise.resolve( migrationPlan )
 			) );
 
 			const uiInfoMock = t.mock.method( uiFake, 'info', () => {} );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( uiInfoMock.mock.callCount(), 1 );
 			assert.deepEqual( uiInfoMock.mock.calls[ 0 ].arguments, [

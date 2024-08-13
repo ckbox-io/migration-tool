@@ -6,51 +6,59 @@ import { Mock, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import MigrateFoldersTask from '@src/tasks/MigrateFoldersTask';
-import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceFolder } from '@src/SourceStorageAdapter';
-import CKBoxClient, { ICKBoxClient } from '@src/CKBoxClient';
+import { ICKBoxClient } from '@src/CKBoxClient';
 import { IUI } from '@src/UI';
 import { ILogger } from '@src/Logger';
 
 import {
 	createCKBoxClientFake,
+	createCKBoxClientManagerFake,
 	createLoggerFake,
 	createMigratedCategoriesRepositoryFake,
 	createMigratedFoldersRepositoryFake,
+	createMigrationPlanManagerFake,
 	createUIFake
 } from '../utils/_fakes';
 import MigrationPlan from '@src/MigrationPlan';
 import { IMigratedFoldersRepository } from '@src/repositories/MigratedFoldersRepository';
 import { IMigratedCategoriesRepository } from '@src/repositories/MigratedCategoriesRepository';
+import { IMigrationPlanManager } from '@src/MigrationPlanManager';
+import { ICKBoxClientManager } from '@src/CKBoxClientManager';
 
-// TODO: Recognize in which category the folder should be created!!!
 describe( 'MigrateFoldersTask', () => {
 	describe( 'run()', () => {
-		let context: MigratorContext;
 		let clientFake: ICKBoxClient;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
 		let abortController: AbortController;
+		let migrationPlanManager: IMigrationPlanManager;
+		let ckboxClientManagerFake: ICKBoxClientManager;
 		let migratedCategoriesRepositoryFake: IMigratedCategoriesRepository;
 		let migratedFoldersRepositoryFake: IMigratedFoldersRepository;
+		let task: ITask;
 
 		beforeEach( () => {
-			context = new MigratorContext();
 			clientFake = createCKBoxClientFake();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
 			abortController = new AbortController();
+			migrationPlanManager = createMigrationPlanManagerFake();
+			ckboxClientManagerFake = createCKBoxClientManagerFake( clientFake );
 
 			migratedCategoriesRepositoryFake = createMigratedCategoriesRepositoryFake();
 			migratedFoldersRepositoryFake = createMigratedFoldersRepositoryFake();
 
-			context.setInstance( clientFake, CKBoxClient.name );
+			task = new MigrateFoldersTask(
+				migrationPlanManager,
+				ckboxClientManagerFake,
+				migratedCategoriesRepositoryFake,
+				migratedFoldersRepositoryFake
+			);
 		} );
 
 		it( 'should migrate folders of a category', async t => {
-			const task: ITask<MigratorContext> = new MigrateFoldersTask( migratedCategoriesRepositoryFake, migratedFoldersRepositoryFake );
-
 			const sourceFolders: ISourceFolder[] = [
 				{
 					id: 'f-1',
@@ -66,11 +74,11 @@ describe( 'MigrateFoldersTask', () => {
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceFolders );
 
-			context.setInstance( migrationPlan, 'MigrationPlan' );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
 			const createFolderMock: Mock<Function> = t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( createFolderMock.mock.callCount(), 2 );
 
@@ -86,8 +94,6 @@ describe( 'MigrateFoldersTask', () => {
 		} );
 
 		it( 'should migrate child folders', async t => {
-			const task: ITask<MigratorContext> = new MigrateFoldersTask( migratedCategoriesRepositoryFake, migratedFoldersRepositoryFake );
-
 			const sourceFolders: ISourceFolder[] = [
 				{
 					id: 'f-1',
@@ -104,11 +110,11 @@ describe( 'MigrateFoldersTask', () => {
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceFolders );
 
-			context.setInstance( migrationPlan, 'MigrationPlan' );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
 			const createFolderMock: Mock<Function> = t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( createFolderMock.mock.callCount(), 2 );
 
@@ -124,8 +130,6 @@ describe( 'MigrateFoldersTask', () => {
 		} );
 
 		it( 'should log the progress', async t => {
-			const task: ITask<MigratorContext> = new MigrateFoldersTask( migratedCategoriesRepositoryFake, migratedFoldersRepositoryFake );
-
 			const sourceFolders: ISourceFolder[] = [
 				{
 					id: 'f-1',
@@ -137,11 +141,11 @@ describe( 'MigrateFoldersTask', () => {
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceFolders );
 			const loggerInfoMock: Mock<Function> = t.mock.method( loggerFake, 'info' );
 
-			context.setInstance( migrationPlan, 'MigrationPlan' );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
 			t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( loggerInfoMock.mock.callCount(), 2 );
 
@@ -156,8 +160,6 @@ describe( 'MigrateFoldersTask', () => {
 		} );
 
 		it( 'should store the mapping of source and migrated folders', async t => {
-			const task: ITask<MigratorContext> = new MigrateFoldersTask( migratedCategoriesRepositoryFake, migratedFoldersRepositoryFake );
-
 			const sourceFolders: ISourceFolder[] = [
 				{
 					id: 'f-1',
@@ -172,9 +174,9 @@ describe( 'MigrateFoldersTask', () => {
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceFolders );
 
-			context.setInstance( migrationPlan, 'MigrationPlan' );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( setMigratedFolderMock.mock.callCount(), 1 );
 			assert.deepEqual( setMigratedFolderMock.mock.calls[ 0 ].arguments, [ 'c-1', 'f-1', 'migrated-folder-id' ] );

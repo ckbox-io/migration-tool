@@ -3,7 +3,6 @@
  */
 
 import 'reflect-metadata';
-import fs from 'node:fs/promises';
 
 import {
 	Length,
@@ -17,18 +16,6 @@ import {
 } from 'class-validator';
 import { Type, plainToInstance } from 'class-transformer';
 import chalk from 'chalk';
-
-export class ConfigReader {
-	public async read( path: string ): Promise<MigratorConfig> {
-		const fileContent: Buffer = await fs.readFile( path );
-
-		const config: MigratorConfig = plainToInstance( MigratorConfig, JSON.parse( fileContent.toString() ) );
-
-		await validateOrReject( config, { whitelist: true } );
-
-		return config;
-	}
-}
 
 export class MigratorConfig {
 	@ValidateNested()
@@ -70,7 +57,7 @@ export class CKBoxConfig {
 
 export class CKBoxAccessCredentialsConfig {
 	@IsString()
-	@Length( 20 )
+	@Length( 20, 20 )
 	@IsDefined()
 	public readonly environmentId: string;
 
@@ -79,17 +66,22 @@ export class CKBoxAccessCredentialsConfig {
 	public readonly secret: string;
 }
 
-// TODO: Move to LoadConfigTask
-export function printValidationErrors( validationErrors: ValidationError[], indent?: number ) {
+export function formatValidationErrors( validationErrors: ValidationError[], indent?: number ): string {
+	let output = '';
+
 	for ( const error of validationErrors ) {
-		console.log( ' '.repeat( ( indent ?? 0 ) * 4 ) + '- ' + chalk.blue.bold( error.property ) );
+		output += ' '.repeat( ( indent ?? 0 ) * 4 ) + '- ' + chalk.blue.bold( error.property ) + '\n';
 
 		for ( const constraint in error.constraints ?? {} ) {
-			console.log( ' '.repeat( ( ( indent ?? 0 ) + 1 ) * 4 ) + chalk.red.bold( constraint ) + ': ' + error.constraints![ constraint ] );
+			output += ' '.repeat( ( ( indent ?? 0 ) + 1 ) * 4 ) +
+				chalk.red.bold( constraint ) + ': ' +
+				error.constraints![ constraint ] + '\n';
 		}
 
 		if ( error.children ) {
-			printValidationErrors( error.children, ( indent ?? 0 ) + 1 );
+			output += formatValidationErrors( error.children, ( indent ?? 0 ) + 1 );
 		}
 	}
+
+	return output;
 }

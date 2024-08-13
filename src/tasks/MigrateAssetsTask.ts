@@ -3,8 +3,7 @@
  */
 
 import { ISourceStorageAdapter } from '../SourceStorageAdapter';
-import CKBoxClient, { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
-import MigratorContext from '../MigratorContext';
+import { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
 import { ITask } from '../Pipeline';
 import { ILogger } from '../Logger';
 import { IUI } from '../UI';
@@ -12,8 +11,11 @@ import MigrationPlan from '../MigrationPlan';
 import { IURLMappingWriter } from '../URLMappingWriter';
 import { IMigratedCategoriesRepository } from '../repositories/MigratedCategoriesRepository';
 import { IMigratedFoldersRepository } from '../repositories/MigratedFoldersRepository';
+import { ICKBoxClientManager } from '../CKBoxClientManager';
+import { ISourceStorageManager } from '../SourceStorageManager';
+import { IMigrationPlanManager } from '../MigrationPlanManager';
 
-export default class MigrateAssetsTask implements ITask<MigratorContext> {
+export default class MigrateAssetsTask implements ITask {
 	public readonly processingMessage: string = 'Migrating assets';
 
 	public readonly successMessage: string = 'Assets migrated';
@@ -21,15 +23,18 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 	public readonly failureMessage: string = 'Assets migration failed';
 
 	public constructor(
-		private _urlMappingWriter: IURLMappingWriter,
-		private _migratedCategoriesRepository: IMigratedCategoriesRepository,
-		private _migratedFoldersRepository: IMigratedFoldersRepository
+		private readonly _migrationPlanManager: IMigrationPlanManager,
+		private readonly _sourceStorageManager: ISourceStorageManager,
+		private readonly _ckboxClientManager: ICKBoxClientManager,
+		private readonly _urlMappingWriter: IURLMappingWriter,
+		private readonly _migratedCategoriesRepository: IMigratedCategoriesRepository,
+		private readonly _migratedFoldersRepository: IMigratedFoldersRepository
 	) {}
 
-	public async run( context: MigratorContext, ui: IUI, logger: ILogger ): Promise<void> {
-		const client: ICKBoxClient = context.getInstance( CKBoxClient );
-		const adapter: ISourceStorageAdapter = context.getInstance( 'Adapter' );
-		const migrationPlan: MigrationPlan = context.getInstance( MigrationPlan );
+	public async run( ui: IUI, logger: ILogger ): Promise<void> {
+		const client: ICKBoxClient = this._ckboxClientManager.getClient();
+		const adapter: ISourceStorageAdapter = this._sourceStorageManager.getAdapter();
+		const migrationPlan: MigrationPlan = this._migrationPlanManager.getMigrationPlan();
 
 		const assetsCount: number = migrationPlan.getAssetsCount();
 
@@ -64,6 +69,8 @@ export default class MigrateAssetsTask implements ITask<MigratorContext> {
 				this._urlMappingWriter.write( sourceAsset.downloadUrlToReplace, url );
 			} catch ( error ) {
 				logger.error( 'Asset migration failed.', { sourceAssetId: sourceAsset.id, error } );
+
+				console.log( error );
 
 				failing = true;
 			}

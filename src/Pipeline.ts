@@ -5,24 +5,24 @@
 import { ILogger } from './Logger';
 import { IUI } from './UI';
 
-export interface ITask<ContextT> {
+export interface ITask {
 	readonly processingMessage?: string;
 
 	readonly successMessage?: string;
 
 	readonly failureMessage?: string;
 
-	run( context: ContextT, ui: IUI, logger: ILogger, abortController: AbortController ): Promise<void>;
+	run( ui: IUI, logger: ILogger, abortController: AbortController ): Promise<void>;
 }
 
-export interface IPipeline<ContextT> {
-	run( context: ContextT ): Promise<void>;
+export interface IPipeline {
+	run(): Promise<void>;
 }
 
-export default class Pipeline<ContextT> implements IPipeline<ContextT> {
-	constructor( private _tasks: ITask<ContextT>[], private _ui: IUI, private _logger: ILogger ) {}
+export default class Pipeline implements IPipeline {
+	constructor( private _tasks: ITask[], private _ui: IUI, private _logger: ILogger ) {}
 
-	public async run( context: ContextT ): Promise<void> {
+	public async run(): Promise<void> {
 		const abortController: AbortController = new AbortController();
 
 		for ( const task of this._tasks ) {
@@ -35,7 +35,7 @@ export default class Pipeline<ContextT> implements IPipeline<ContextT> {
 					this._ui.spinner( task.processingMessage );
 				}
 
-				await task.run( context, this._ui, this._logger.child( taskName ), abortController );
+				await task.run( this._ui, this._logger.child( taskName ), abortController );
 
 				if ( task.processingMessage || task.successMessage ) {
 					this._ui.succeed( task.successMessage );

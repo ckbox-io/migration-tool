@@ -24,3 +24,5 @@ logs
 __data
 
 .eslintcache
+
+config.json
