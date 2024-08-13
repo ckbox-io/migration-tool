@@ -58,6 +58,7 @@ import MigrateAssetsTask from './tasks/MigrateAssetsTask';
 	const version: string = await getVersion();
 
 	ui.info( `CKBox migrator v${ version }` );
+	logger.info( 'CKBox migrator started', { version } );
 
 	const migrationPipeline: IPipeline = new Pipeline( [
 		new LoadConfigTask( configManager ),
