@@ -70,8 +70,6 @@ export default class MigrateAssetsTask implements ITask {
 			} catch ( error ) {
 				logger.error( 'Asset migration failed.', { sourceAssetId: sourceAsset.id, error } );
 
-				console.log( error );
-
 				failing = true;
 			}
 
