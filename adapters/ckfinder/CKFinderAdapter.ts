@@ -167,9 +167,6 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		try {
 			await validateOrReject( deserializedResponse );
 		} catch ( error ) {
-			// TODO: Use logger.
-			console.log( `Invalid response for ${ url } request.` );
-
 			throw error;
 		}
 
