@@ -43,6 +43,8 @@ import MigrateAssetsTask from './tasks/MigrateAssetsTask';
 	process.on( 'uncaughtException', unhandledRejectionHandler );
 	process.on( 'SIGINT', stopHandler );
 	process.on( 'SIGTERM', stopHandler );
+	process.removeAllListeners('warning');
+	process.on( 'warning', warning => logger.warn( 'NodeJS warning', warning ) );
 
 	const migratedCategoriesRepository: IMigratedCategoriesRepository = new MigratedCategoriesRepository();
 	const migratedFoldersRepository: IMigratedFoldersRepository = new MigratedFoldersRepository();

@@ -7,7 +7,7 @@ import { unlink } from 'node:fs/promises';
 
 export interface ILogger {
 	info( message: string, data?: Record<string, unknown> ): void;
-	warn( message: string, data?: Record<string, unknown> ): void;
+	warn( message: string, data?: Record<string, unknown> | Error ): void;
 	error( message: string, data?: Record<string, unknown> | Error ): void;
 	child( name: string ): ILogger;
 }
@@ -31,7 +31,7 @@ export default class Logger implements ILogger {
 		this._log( 'info', message, data );
 	}
 
-	public warn( message: string, data?: Record<string, unknown> ): void {
+	public warn( message: string, data?: Record<string, unknown> | Error ): void {
 		this._log( 'warn', message, data );
 	}
 
@@ -40,7 +40,7 @@ export default class Logger implements ILogger {
 	}
 
 	public child( name: string ): ILogger {
-		return new Logger( name );
+		return new Logger( name, this._stream );
 	}
 
 	public async removeLogFile(): Promise<void> {
