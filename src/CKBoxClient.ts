@@ -59,7 +59,7 @@ export default class CKBoxClient implements ICKBoxClient {
 			}
 		};
 
-		this._token = jwt.sign( tokenPayload, _config.accessCredentials.secret, {
+		this._token = jwt.sign( tokenPayload, _config.accessCredentials.accessKey, {
 			algorithm: 'HS256'
 		} );
 	}
@@ -73,7 +73,7 @@ export default class CKBoxClient implements ICKBoxClient {
 		if ( !response.ok ) {
 			throw new Error(
 				`Failed to connect to the CKBox at ${ this._config.serviceOrigin }.` +
-				`Status code: ${ response.status }. ${ await response.text() }`
+				` Status code: ${ response.status }. ${ await response.text() }`
 			);
 		}
 	}

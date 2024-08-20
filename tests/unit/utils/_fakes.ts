@@ -62,7 +62,7 @@ export function createMigratorConfigFake( adapterConfig: Record<string, unknown>
 			serviceOrigin: 'http://localhost:8080',
 			accessCredentials: {
 				environmentId: '12345678901234567890',
-				secret: '12345678901234567890'
+				accessKey: '12345678901234567890'
 			}
 		}
 	} );

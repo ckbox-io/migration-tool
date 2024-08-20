@@ -62,7 +62,7 @@ export class CKBoxAccessCredentialsConfig {
 
 	@IsString()
 	@IsDefined()
-	public readonly secret: string;
+	public readonly accessKey: string;
 }
 
 export function formatValidationErrors( validationErrors: ValidationError[], indent?: number ): string {

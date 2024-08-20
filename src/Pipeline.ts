@@ -26,9 +26,9 @@ export default class Pipeline implements IPipeline {
 		const abortController: AbortController = new AbortController();
 
 		for ( const task of this._tasks ) {
-			try {
-				const taskName: string = task.constructor.name;
+			const taskName: string = task.constructor.name;
 
+			try {
 				this._logger.info( 'Processing task', { taskName } );
 
 				if ( task.processingMessage ) {
@@ -48,7 +48,7 @@ export default class Pipeline implements IPipeline {
 					break;
 				}
 			} catch ( error ) {
-				this._logger.error( 'Task failed', { error } );
+				this._logger.error( 'Task failed', { task: taskName, error } );
 
 				if ( task.processingMessage || task.failureMessage ) {
 					this._ui.fail( task.failureMessage );

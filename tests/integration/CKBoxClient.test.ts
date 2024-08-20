@@ -14,7 +14,7 @@ import { CKBoxConfig } from '@src/Config';
 import CKBoxClient from '@src/CKBoxClient';
 
 const CKBOX_API_ORIGIN: string | undefined = process.env.CKBOX_API_ORIGIN;
-const CKBOX_API_SECRET: string | undefined = process.env.CKBOX_API_SECRET;
+const CKBOX_API_ACCESS_KEY: string | undefined = process.env.CKBOX_API_ACCESS_KEY;
 const CKBOX_API_ENVIRONMENT_ID: string | undefined = process.env.CKBOX_API_ENVIRONMENT_ID;
 
 describe( 'CKBoxClient', { skip: _shouldSkipTests() }, () => {
@@ -222,7 +222,7 @@ function _createConfig( params?: { environmentId?: string; workspaceId?: string 
 		serviceOrigin: CKBOX_API_ORIGIN,
 		accessCredentials: {
 			environmentId: params?.environmentId || CKBOX_API_ENVIRONMENT_ID,
-			secret: CKBOX_API_SECRET
+			accessKey: CKBOX_API_ACCESS_KEY
 		},
 		workspaceId: params?.workspaceId
 	} );
@@ -233,8 +233,8 @@ function _shouldSkipTests(): string | undefined {
 		return 'CKBOX_API_ORIGIN environment variable is not set.';
 	}
 
-	if ( !CKBOX_API_SECRET ) {
-		return 'CKBOX_API_SECRET environment variable is not set.';
+	if ( !CKBOX_API_ACCESS_KEY ) {
+		return 'CKBOX_API_ACCESS_KEY environment variable is not set.';
 	}
 
 	if ( !CKBOX_API_ENVIRONMENT_ID ) {
@@ -262,7 +262,7 @@ async function _ckboxAPICall(
 		}
 	};
 
-	const token: string = jwt.sign( tokenPayload, CKBOX_API_SECRET!, {
+	const token: string = jwt.sign( tokenPayload, CKBOX_API_ACCESS_KEY!, {
 		algorithm: 'HS256'
 	} );
 
