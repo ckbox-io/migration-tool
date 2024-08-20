@@ -4,7 +4,7 @@ The CKBox Migration Tool is a command-line interface tool designed to transfer f
 
 # Requirements
 
-* NodeJS 20.x or later
+* NodeJS 18.x or later
 
 # Installation
 
@@ -24,14 +24,14 @@ In order to migrate your assets, you will need to configure a connection to your
 ## Configuration of CKBox connection
 
 To configure the CKBox connection, you will need to provide access credentials (environment ID and access key). You can find more about CKBox credentials in [documentation of authorization in CKBox](https://ckeditor.com/docs/ckbox/latest/guides/configuration/authentication.html#creating-access-credentials).
+Furthermore, you should provide `serviceOrigin` URL. If you are the SaaS client, this should point to `https://api.ckbox.io`. For On-Premises, you need to set this value to a URL pointing to the REST API of your CKBox On-Premises application.
 
-Furthermore, you should provide `serviceOrigin` URL. If you are the SaaS client, this should point to `https://api.ckbox.io`. For On-Premises, please set this value to a URL pointing to your On-Premises installation.
 
 ```json
 	"ckbox": {
 		"accessCredentials": {
 			"environmentId": "<ENVIRONMENT_ID>",
-			"secret": "<ACCESS_KEY>"
+			"accessKey": "<ACCESS_KEY>"
 		},
 		"workspaceId": "<WORKSPACE_ID>",
 		"serviceOrigin": "<SERVICE_ORIGIN>"
@@ -40,11 +40,21 @@ Furthermore, you should provide `serviceOrigin` URL. If you are the SaaS client,
 
 Optionally, you can also provide `workspaceId`. If you don't, files will be uploaded to a default workspace. Read more about workspaces in [workspaces documentation](https://ckeditor.com/docs/ckbox/latest/features/file-management/workspaces.html).
 
+### List of configuration options for CKBox connection
+
+| Option name                           | Description                                    |
+| ------------------------------------- | ---------------------------------------------- |
+| ckbox.assetsCredentials.environmentId | Target environment for the migration.          |
+| ckbox.assetsCredentials.accessKey     | Access Key used to sign authorization token.   |
+| ckbox.workspaceId                     | Target workspace for the migration (optional). |
+| ckbox.serviceOrigin                   | Sets the origin to use for the CKBox REST API. |
+
+
 ## Configuration of a source storage
 
 ### CKFinder
 
-Currently, CKFinder is the only built-in supported storage. To migrate assets from CKFinder, you must set a `type` for `ckfinder`" set the URL to the connector, and add the headers used for authentication.
+To migrate assets from CKFinder, you must set a `type` for `ckfinder`" set the URL to the connector, and add the headers used for authentication.
 
 ```json
 	"source": {
@@ -59,6 +69,14 @@ Currently, CKFinder is the only built-in supported storage. To migrate assets fr
 		}
 	}
 ```
+
+#### List of configuration options for CKFinder connection
+
+| Option name                           | Description                                       |
+| ------------------------------------- | ------------------------------------------------- |
+| source.type                           | Must be set to `ckfinder`.                        |
+| source.options.connectorPath          | Sets the origin to use for the CKFinder REST API. |
+| source.options.authentication.headers | Sets headers needed for authentication.           |
 
 ## Checking the configuration
 
