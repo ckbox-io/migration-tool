@@ -80,7 +80,7 @@ To migrate assets from CKFinder, you must set a `type` for `ckfinder`" set the U
 
 ## Checking the configuration
 
-Prior to initiating the migration process, it is advisable to verify the configuration by running the migrator in dry run mode.
+Prior to initiating the migration process, it is advisable to verify the configuration by running the migrator in dry run mode. This command will verify connections and scan the source storage to see if it has access to resources.
 
 ```
 npm start -- --dry-run
@@ -93,6 +93,8 @@ To start the migration you need to execute the command below:
 ```sh
 npm start
 ```
+
+This command will create categories, folders and upload assets to your CKBox instance.
 
 ## Replacing the old URLs with the new ones in your application
 
