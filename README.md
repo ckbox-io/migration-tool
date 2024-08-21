@@ -138,7 +138,7 @@ export default class ExampleAdapter implements ISourceStorageAdapter {
 		return [
 			categories: [],
 			assets: []
-		]
+		];
 	}
 
 	public async getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
