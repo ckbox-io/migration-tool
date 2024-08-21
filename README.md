@@ -1,6 +1,6 @@
 # About
 
-The CKBox Migration Tool is a command-line interface tool designed to transfer files from your old system to CKBox. Depending on what is supported in your source system, it can create categories, folders and assets. The tool has built-in support for migration from CKFinder, or you can create a custom adapter to migrate files from any application you require.
+The CKBox Migration Tool is a command-line interface tool designed to transfer files from your old system to CKBox. Depending on what is supported in your source system, it can create categories, folders and assets. The tool has built-in support for migration from CKFinder and from Easy Image, or you can create a custom adapter to migrate files from any application you require.
 
 # Requirements
 
@@ -54,7 +54,7 @@ Optionally, you can also provide `workspaceId`. If you don't, files will be uplo
 
 ### CKFinder
 
-To migrate assets from CKFinder, you must set a `type` for `ckfinder`" set the URL to the connector, and add the headers used for authentication.
+To migrate assets from CKFinder, you must set a `type` for `ckfinder`, set the URL to the connector, and add the headers used for authentication.
 
 ```json
 	"source": {
@@ -77,6 +77,34 @@ To migrate assets from CKFinder, you must set a `type` for `ckfinder`" set the U
 | source.type                           | Must be set to `ckfinder`.                        |
 | source.options.connectorPath          | Sets the origin to use for the CKFinder REST API. |
 | source.options.authentication.headers | Sets headers needed for authentication.           |
+
+### Easy Image
+
+To migrate assets from Easy Image, you must set a `type` for `easy-image`, set the REST API origin URL, and add access credentials.
+You can find more about Easy Image credentials in [documentation of authorization in CKEditor Cloud Services](https://ckeditor.com/docs/cs/latest/developer-resources/security/access-key.html#managing-the-access-credentials)
+
+```json
+	"source": {
+		"type": "easy-image",
+		"options": {
+			"accessCredentials": {
+				"environmentId": "<ENVIRONMENT_ID>",
+				"accessKey": "<ACCESS_KEY>"
+			},
+			"serviceOrigin": "<SERVICE_ORIGIN>"
+		}
+	}
+```
+
+#### List of configuration options for Easy Image connection
+
+| Option name                                    | Description                                         |
+| ---------------------------------------------- | --------------------------------------------------- |
+| source.type                                    | Must be set to `easy-image`.                        |
+| source.options.assetsCredentials.environmentId | Source environment for the migration.               |
+| source.options.assetsCredentials.accessKey     | Access Key used to sign authorization token.        |
+| source.options.serviceOrigin                   | Sets the origin to use for the Easy Image REST API. |
+
 
 ## Checking the configuration
 
