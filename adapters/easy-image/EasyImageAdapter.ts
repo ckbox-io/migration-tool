@@ -2,17 +2,18 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
+import path, { ParsedPath } from 'node:path';
+
 import { ISourceStorageAdapter, IMigrationPlan, ISourceAsset } from '@ckbox-migrator';
 
+import jwt from 'jsonwebtoken';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import fetch, { Response } from 'node-fetch';
-import jwt from 'jsonwebtoken';
 
 import { EasyImageConfig } from './EasyImageConfig';
 import { EasyImageListFilesResponse } from './EasyImageResponses';
 import { SUPPORTED_ANIMATIONS_EXTENSIONS, SUPPORTED_IMAGES_EXTENSIONS } from './constants';
-import path, { ParsedPath } from 'node:path';
 
 export default class EasyImageAdapter implements ISourceStorageAdapter {
 	readonly name: string = 'EasyImage';
@@ -82,7 +83,14 @@ export default class EasyImageAdapter implements ISourceStorageAdapter {
 	}
 
 	private async _fetch( path: string ): Promise<any> {
-		const response: Response = await fetch( `${ this._config.serviceOrigin }${ path }` );
+		const response: Response = await fetch(
+			`${ this._config.serviceOrigin }${ path }`,
+			{
+				headers: {
+					Authorization: this._token
+				}
+			}
+		);
 
 		if ( !response.ok ) {
 			throw new Error( `Failed to fetch data from the EasyImage service at ${ this._config.serviceOrigin }.` );
