@@ -20,6 +20,7 @@ export interface IUI {
 	prompt( message: string ): Promise<string>;
 	addIndent( indent?: number ): void;
 	clearIndent(): void;
+	stop(): void;
 }
 
 export default class UI implements IUI {
@@ -29,8 +30,6 @@ export default class UI implements IUI {
 	private constructor( ora: ( oraOptions?: Options ) => Ora ) {
 		this._spinner = ora( { spinner: 'dots' } );
 	}
-
-	// TODO: stop spinner on exit
 
 	public info( message: string ): void {
 		this._spinner.info( message );
@@ -57,13 +56,6 @@ export default class UI implements IUI {
 
 		return await rl.question( message );
 	}
-
-	public static async create(): Promise<UI> {
-		const { default: ora } = await requireESM<typeof import( 'ora' )>( 'ora', module );
-
-		return new UI( ora );
-	}
-
 	public addIndent( indent?: number ): void {
 		this._indent += indent ?? 1;
 		this._indent = this._indent >= 0 ? this._indent : 0;
@@ -73,5 +65,15 @@ export default class UI implements IUI {
 	public clearIndent(): void {
 		this._indent = 0;
 		this._spinner.indent = 0;
+	}
+
+	public stop(): void {
+		this._spinner.stop();
+	}
+
+	public static async create(): Promise<UI> {
+		const { default: ora } = await requireESM<typeof import( 'ora' )>( 'ora', module );
+
+		return new UI( ora );
 	}
 }

@@ -3,22 +3,27 @@
  */
 
 import { ISourceStorageAdapter } from '../SourceStorageAdapter';
-import MigratorContext from '../MigratorContext';
 import { ITask } from '../Pipeline';
 import MigrationPlan from '../MigrationPlan';
 import { IUI } from '../UI';
+import { ISourceStorageManager } from '../SourceStorageManager';
+import { IMigrationPlanManager } from '../MigrationPlanManager';
 
-export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
+export default class CreateMigrationPlanTask implements ITask {
 	public readonly processingMessage: string = 'Creating migration plan';
 
 	public readonly successMessage: string = 'Migration plan created';
 
 	public readonly failureMessage: string = 'Migration plan creation failed';
 
-	public constructor( private _urlMappingFilename: string ) {}
+	public constructor(
+		private readonly _migrationPlanManager: IMigrationPlanManager,
+		private readonly _sourceStorageManager: ISourceStorageManager,
+		private readonly _urlMappingFilename: string
+	) {}
 
-	public async run( context: MigratorContext, ui: IUI ): Promise<void> {
-		const adapter: ISourceStorageAdapter = context.getInstance( 'Adapter' );
+	public async run( ui: IUI ): Promise<void> {
+		const adapter: ISourceStorageAdapter = this._sourceStorageManager.getAdapter();
 
 		const { categories, assets } = await adapter.prepareMigrationPlan();
 		const migrationPlan: MigrationPlan = new MigrationPlan( categories, assets );
@@ -39,6 +44,6 @@ export default class CreateMigrationPlanTask implements ITask<MigratorContext> {
 			` - save the map of old and new file URLs (the map will be saved in ${ this._urlMappingFilename })\n`
 		);
 
-		context.setInstance( migrationPlan );
+		this._migrationPlanManager.createMigrationPlan( migrationPlan );
 	}
 }
