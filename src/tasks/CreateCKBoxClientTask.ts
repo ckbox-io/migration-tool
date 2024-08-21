@@ -2,24 +2,27 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import CKBoxClient from '../CKBoxClient';
+import { ICKBoxClientManager } from '../CKBoxClientManager';
 import { MigratorConfig } from '../Config';
-import MigratorContext from '../MigratorContext';
+import { IConfigManager } from '../ConfigManager';
 import { ITask } from '../Pipeline';
 
-export default class CreateCKBoxClientTask implements ITask<MigratorContext> {
+export default class CreateCKBoxClientTask implements ITask {
 	public readonly processingMessage: string = 'Creating CKBox client';
 
 	public readonly successMessage: string = 'CKBox client created';
 
 	public readonly failureMessage: string = 'CKBox client creation failed';
 
-	public run( context: MigratorContext ): Promise<void> {
-		const config: MigratorConfig = context.getInstance( MigratorConfig );
+	public constructor(
+		private readonly _configManager: IConfigManager,
+		private readonly _ckboxClientManager: ICKBoxClientManager
+	) {}
 
-		const client: CKBoxClient = new CKBoxClient( config.ckbox );
+	public run(): Promise<void> {
+		const config: MigratorConfig = this._configManager.getConfig();
 
-		context.setInstance( client );
+		this._ckboxClientManager.createClient( config.ckbox );
 
 		return Promise.resolve();
 	}

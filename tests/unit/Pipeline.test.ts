@@ -13,19 +13,17 @@ import { createLoggerFake, createUIFake } from './utils/_fakes';
 
 describe( 'Pipeline', () => {
 	describe( 'run()', () => {
-		type ContextStub = Record<string, string>;
-
 		let uiFake: IUI;
 		let loggerFake: ILogger;
 
-		let contextStub: ContextStub;
-		let taskMock: ITask<ContextStub>;
-		let taskMock2: ITask<ContextStub>;
-		let failingTaskMock: ITask<ContextStub>;
-		let abortedTaskMock: ITask<ContextStub>;
+		let context: Record<string, unknown>;
+		let taskMock: ITask;
+		let taskMock2: ITask;
+		let failingTaskMock: ITask;
+		let abortedTaskMock: ITask;
 
 		beforeEach( () => {
-			contextStub = {};
+			context = {};
 
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
@@ -34,7 +32,7 @@ describe( 'Pipeline', () => {
 				processingMessage: 'Processing taskMock',
 				successMessage: 'TaskMock succeeded',
 				failureMessage: 'TaskMock failed',
-				run: ( context: ContextStub ) => {
+				run: () => {
 					context.taskMock = 'taskMock';
 
 					return Promise.resolve();
@@ -42,7 +40,7 @@ describe( 'Pipeline', () => {
 			};
 
 			taskMock2 = {
-				run: ( context: ContextStub ) => {
+				run: () => {
 					context.taskMock2 = 'taskMock2';
 
 					return Promise.resolve();
@@ -55,7 +53,7 @@ describe( 'Pipeline', () => {
 			};
 
 			abortedTaskMock = {
-				run: ( context: ContextStub, ui: IUI, logger: ILogger, abortController: AbortController ) => {
+				run: ( ui: IUI, logger: ILogger, abortController: AbortController ) => {
 					abortController.abort();
 
 					return Promise.resolve();
@@ -64,39 +62,39 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should execute all tasks in the pipeline', async () => {
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
+			const pipeline: IPipeline = new Pipeline(
 				[ taskMock, taskMock2 ],
 				uiFake,
 				loggerFake
 			);
 
-			await pipeline.run( contextStub );
+			await pipeline.run();
 
-			assert.strictEqual( contextStub.taskMock, 'taskMock' );
-			assert.strictEqual( contextStub.taskMock2, 'taskMock2' );
+			assert.strictEqual( context.taskMock, 'taskMock' );
+			assert.strictEqual( context.taskMock2, 'taskMock2' );
 		} );
 
 		it( 'should stop executing tasks if one of them fails', async () => {
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
+			const pipeline: IPipeline = new Pipeline(
 				[ taskMock, failingTaskMock, taskMock2 ],
 				uiFake,
 				loggerFake
 			);
 
 			await assert.rejects( async () => {
-				await pipeline.run( contextStub );
+				await pipeline.run();
 			} );
 
-			assert.strictEqual( contextStub.taskMock, 'taskMock' );
-			assert.strictEqual( contextStub.taskMock2, undefined );
+			assert.strictEqual( context.taskMock, 'taskMock' );
+			assert.strictEqual( context.taskMock2, undefined );
 		} );
 
 		it( 'should display a spinner while executing tasks', async t => {
 			const spinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiFake, loggerFake );
+			const pipeline: IPipeline = new Pipeline( [ taskMock ], uiFake, loggerFake );
 
-			await pipeline.run( contextStub );
+			await pipeline.run();
 
 			assert.equal( spinnerMock.mock.callCount(), 1 );
 			assert.deepEqual( spinnerMock.mock.calls[ 0 ].arguments, [ 'Processing taskMock' ] );
@@ -105,9 +103,9 @@ describe( 'Pipeline', () => {
 		it( 'should display a success message after executing task', async t => {
 			const succeedMock: Mock<Function> = t.mock.method( uiFake, 'succeed', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ taskMock ], uiFake, loggerFake );
+			const pipeline: IPipeline = new Pipeline( [ taskMock ], uiFake, loggerFake );
 
-			await pipeline.run( contextStub );
+			await pipeline.run();
 
 			assert.equal( succeedMock.mock.callCount(), 1 );
 			assert.deepEqual( succeedMock.mock.calls[ 0 ].arguments, [ 'TaskMock succeeded' ] );
@@ -116,10 +114,10 @@ describe( 'Pipeline', () => {
 		it( 'should display a failure message if task fails', async t => {
 			const failMock: Mock<Function> = t.mock.method( uiFake, 'fail', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>( [ failingTaskMock ], uiFake, loggerFake );
+			const pipeline: IPipeline = new Pipeline( [ failingTaskMock ], uiFake, loggerFake );
 
 			await assert.rejects( async () => {
-				await pipeline.run( contextStub );
+				await pipeline.run();
 			} );
 
 			assert.equal( failMock.mock.callCount(), 1 );
@@ -130,13 +128,13 @@ describe( 'Pipeline', () => {
 			const infoMock: Mock<Function> = t.mock.method( uiFake, 'info', () => {} );
 			const runMock: Mock<Function> = t.mock.method( taskMock2, 'run', () => {} );
 
-			const pipeline: IPipeline<ContextStub> = new Pipeline<ContextStub>(
+			const pipeline: IPipeline = new Pipeline(
 				[ taskMock, abortedTaskMock, taskMock2 ],
 				uiFake,
 				loggerFake
 			);
 
-			await pipeline.run( contextStub );
+			await pipeline.run();
 
 			assert.equal( infoMock.mock.callCount(), 1 );
 			assert.deepEqual( infoMock.mock.calls[ 0 ].arguments, [ 'Migration aborted' ] );

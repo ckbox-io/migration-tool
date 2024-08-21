@@ -2,7 +2,6 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { IAdapterFactory } from '@src/AdapterFactory';
 import { MigratorConfig } from '@src/Config';
 import { ISourceStorageAdapter } from '@src/SourceStorageAdapter';
 import { IUI } from '@src/UI';
@@ -14,6 +13,10 @@ import MigrationPlan from '@src/MigrationPlan';
 import { IURLMappingWriter } from '@src/URLMappingWriter';
 import { IMigratedCategoriesRepository } from '@src/repositories/MigratedCategoriesRepository';
 import { IMigratedFoldersRepository } from '@src/repositories/MigratedFoldersRepository';
+import { ICKBoxClientManager } from '@src/CKBoxClientManager';
+import { IMigrationPlanManager } from '@src/MigrationPlanManager';
+import { IConfigManager } from '@src/ConfigManager';
+import { ISourceStorageManager } from '@src/SourceStorageManager';
 
 export function createUIFake(): IUI {
 	return {
@@ -24,7 +27,8 @@ export function createUIFake(): IUI {
 		fail: () => {},
 		prompt: () => Promise.resolve( '' ),
 		addIndent: () => {},
-		clearIndent: () => {}
+		clearIndent: () => {},
+		stop: () => {}
 	};
 }
 
@@ -34,12 +38,6 @@ export function createLoggerFake(): ILogger {
 		warn: () => {},
 		error: () => {},
 		child: () => createLoggerFake()
-	};
-}
-
-export function createAdapterFactoryFake(): IAdapterFactory {
-	return {
-		createAdapter: () => Promise.reject( new Error( 'Not implemented' ) )
 	};
 }
 
@@ -64,7 +62,7 @@ export function createMigratorConfigFake( adapterConfig: Record<string, unknown>
 			serviceOrigin: 'http://localhost:8080',
 			accessCredentials: {
 				environmentId: '12345678901234567890',
-				secret: '12345678901234567890'
+				accessKey: '12345678901234567890'
 			}
 		}
 	} );
@@ -99,5 +97,33 @@ export function createMigratedFoldersRepositoryFake(): IMigratedFoldersRepositor
 	return {
 		addMigratedFolder: () => {},
 		getIdOfMigratedFolder: () => 'migrated-folder-id-f-1'
+	};
+}
+
+export function createConfigManagerFake( config?: MigratorConfig ): IConfigManager {
+	return {
+		loadConfig: () => Promise.resolve(),
+		getConfig: () => config ?? createMigratorConfigFake()
+	};
+}
+
+export function createSourceStorageManagerFake( adapter?: ISourceStorageAdapter ): ISourceStorageManager {
+	return {
+		loadAdapter: () => Promise.resolve(),
+		getAdapter: () => adapter ?? createSourceStorageAdapterFake()
+	};
+}
+
+export function createCKBoxClientManagerFake( client?: ICKBoxClient ): ICKBoxClientManager {
+	return {
+		createClient: () => {},
+		getClient: () => client ?? createCKBoxClientFake()
+	};
+}
+
+export function createMigrationPlanManagerFake( migrationPlan?: MigrationPlan ): IMigrationPlanManager {
+	return {
+		createMigrationPlan: () => {},
+		getMigrationPlan: () => migrationPlan ?? new MigrationPlan( [], [] )
 	};
 }

@@ -7,7 +7,7 @@ import { unlink } from 'node:fs/promises';
 
 export interface ILogger {
 	info( message: string, data?: Record<string, unknown> ): void;
-	warn( message: string, data?: Record<string, unknown> ): void;
+	warn( message: string, data?: Record<string, unknown> | Error ): void;
 	error( message: string, data?: Record<string, unknown> | Error ): void;
 	child( name: string ): ILogger;
 }
@@ -31,7 +31,7 @@ export default class Logger implements ILogger {
 		this._log( 'info', message, data );
 	}
 
-	public warn( message: string, data?: Record<string, unknown> ): void {
+	public warn( message: string, data?: Record<string, unknown> | Error ): void {
 		this._log( 'warn', message, data );
 	}
 
@@ -40,7 +40,7 @@ export default class Logger implements ILogger {
 	}
 
 	public child( name: string ): ILogger {
-		return new Logger( name );
+		return new Logger( name, this._stream );
 	}
 
 	public async removeLogFile(): Promise<void> {
@@ -61,9 +61,22 @@ export default class Logger implements ILogger {
 		}
 
 		if ( data instanceof Error ) {
-			return ' ' + ( data.stack || data.message ) + ( data.cause ? 'Cause: ' + this._formatData( data.cause as Error ) : '' );
+			data = this._getErrorData( data );
+		}
+
+		if ( data.error instanceof Error ) {
+			data = { ...data, ...this._getErrorData( data.error ) };
 		}
 
 		return ' ' + Object.keys( data ).map( key => `${ key }=${ data[ key ] }` ).join( ', ' );
+	}
+
+	private _getErrorData( error: Error ): Record<string, unknown> {
+		const cause: Error | undefined = ( error.cause ) as Error;
+
+		return {
+			error: error.stack || error.message,
+			...error.cause ? { cause: cause?.stack ?? cause?.message } : {}
+		};
 	}
 }

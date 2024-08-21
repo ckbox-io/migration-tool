@@ -119,16 +119,21 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 				CKFinderGetFileURLResponse
 			);
 
+			const downloadParams = new URLSearchParams({
+				command: 'Proxy',
+				type: category.id,
+				currentFolder: folder.id,
+				fileName: asset.name
+			});
+
 			assets.push( {
 				id: `${ folder.id }${ asset.name }`,
 				name: parsedPath.name,
 				extension: parsedPath.ext.substring( 1 ),
-				// TODO: Use URL constructor.
-				downloadUrl: `${ this._config.connectorPath }?command=Proxy&type=${ category.id }&currentFolder=${ folder.id }&fileName=${ asset.name }`,
+				downloadUrl: `${ this._config.connectorPath }?${ downloadParams.toString() }`,
 				downloadUrlToReplace: getFileUrlResponse.url,
 				location: {
 					categoryId: category.id,
-					// TODO: Add test for this scenario.
 					folderId: folder.id === '/' ? undefined : folder.id
 				}
 			} );

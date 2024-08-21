@@ -2,37 +2,37 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { beforeEach, describe, it } from 'node:test';
+import { beforeEach, describe, it, Mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 import LoadConfigTask from '@src/tasks/LoadConfigTask';
-import MigratorContext from '@src/MigratorContext';
-import { MigratorConfig } from '@src/Config';
 import { ITask } from '@src/Pipeline';
 import { ILogger } from '@src/Logger';
 import { IUI } from '@src/UI';
-import { createLoggerFake, createUIFake } from '../utils/_fakes';
+import { IConfigManager } from '@src/ConfigManager';
+import { createConfigManagerFake, createLoggerFake, createUIFake } from '../utils/_fakes';
 
 describe( 'LoadConfigTask', () => {
 	describe( 'run()', () => {
-		let context: MigratorContext;
 		let abortController: AbortController;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
+		let configManagerFake: IConfigManager;
 
 		beforeEach( () => {
-			context = new MigratorContext();
 			abortController = new AbortController();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
+			configManagerFake = createConfigManagerFake();
 		} );
 
-		it( 'should load the configuration', async () => {
-			const task: ITask<MigratorContext> = new LoadConfigTask();
+		it( 'should load the configuration', async t => {
+			const task: ITask = new LoadConfigTask( configManagerFake );
+			const loadConfigMock: Mock<Function> = t.mock.method( configManagerFake, 'loadConfig' );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
-			assert( context.getInstance( MigratorConfig ) );
+			assert.equal( loadConfigMock.mock.callCount(), 1 );
 		} );
 	} );
 } );

@@ -6,10 +6,9 @@ import { Mock, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import MigrateAssetsTask from '@src/tasks/MigrateAssetsTask';
-import MigratorContext from '@src/MigratorContext';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceAsset, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
-import CKBoxClient, { ICKBoxClient } from '@src/CKBoxClient';
+import { ICKBoxClient } from '@src/CKBoxClient';
 import { IUI } from '@src/UI';
 import { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';
@@ -17,32 +16,39 @@ import { IURLMappingWriter } from '@src/URLMappingWriter';
 
 import {
 	createCKBoxClientFake,
+	createCKBoxClientManagerFake,
 	createLoggerFake,
 	createMigratedCategoriesRepositoryFake,
 	createMigratedFoldersRepositoryFake,
+	createMigrationPlanManagerFake,
 	createSourceStorageAdapterFake,
+	createSourceStorageManagerFake,
 	createUIFake,
 	createURLMappingWriterFake
 } from '../utils/_fakes';
 import { PassThrough } from 'node:stream';
 import { IMigratedFoldersRepository } from '@src/repositories/MigratedFoldersRepository';
 import { IMigratedCategoriesRepository } from '@src/repositories/MigratedCategoriesRepository';
+import { ISourceStorageManager } from '@src/SourceStorageManager';
+import { IMigrationPlanManager } from '@src/MigrationPlanManager';
+import { ICKBoxClientManager } from '@src/CKBoxClientManager';
 
 describe( 'MigrateAssetsTask', () => {
 	describe( 'run()', () => {
-		let context: MigratorContext;
 		let clientFake: ICKBoxClient;
 		let adapterFake: ISourceStorageAdapter;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
 		let _urlMappingWriterFake: IURLMappingWriter;
 		let abortController: AbortController;
+		let migrationPlanManager: IMigrationPlanManager;
+		let ckboxClientManagerFake: ICKBoxClientManager;
+		let sourceStorageAdapterManagerFake: ISourceStorageManager;
 		let migratedFoldersRepositoryFake: IMigratedFoldersRepository;
 		let migratedCategoriesRepositoryFake: IMigratedCategoriesRepository;
-		let task: ITask<MigratorContext>;
+		let task: ITask;
 
 		beforeEach( () => {
-			context = new MigratorContext();
 			clientFake = createCKBoxClientFake();
 			adapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
@@ -52,11 +58,18 @@ describe( 'MigrateAssetsTask', () => {
 
 			migratedFoldersRepositoryFake = createMigratedFoldersRepositoryFake();
 			migratedCategoriesRepositoryFake = createMigratedCategoriesRepositoryFake();
+			migrationPlanManager = createMigrationPlanManagerFake();
+			ckboxClientManagerFake = createCKBoxClientManagerFake( clientFake );
+			sourceStorageAdapterManagerFake = createSourceStorageManagerFake( adapterFake );
 
-			context.setInstance( clientFake, CKBoxClient.name );
-			context.setInstance( adapterFake, 'Adapter' );
-
-			task = new MigrateAssetsTask( _urlMappingWriterFake, migratedCategoriesRepositoryFake, migratedFoldersRepositoryFake );
+			task = new MigrateAssetsTask(
+				migrationPlanManager,
+				sourceStorageAdapterManagerFake,
+				ckboxClientManagerFake,
+				_urlMappingWriterFake,
+				migratedCategoriesRepositoryFake,
+				migratedFoldersRepositoryFake
+			);
 		} );
 
 		it( 'should migrate assets of a category', async t => {
@@ -87,9 +100,9 @@ describe( 'MigrateAssetsTask', () => {
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceAssets );
 
-			context.setInstance( migrationPlan );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( uploadAssetMock.mock.callCount(), 1 );
 			assert.deepEqual( uploadAssetMock.mock.calls[ 0 ].arguments, [ {
@@ -130,9 +143,9 @@ describe( 'MigrateAssetsTask', () => {
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceAssets );
 
-			context.setInstance( migrationPlan );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( uploadAssetMock.mock.callCount(), 1 );
 			assert.deepEqual( uploadAssetMock.mock.calls[ 0 ].arguments, [ {
@@ -183,9 +196,9 @@ describe( 'MigrateAssetsTask', () => {
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceAssets );
 
-			context.setInstance( migrationPlan );
+			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( uiSpinnerMock.mock.callCount(), 2 );
 			assert.deepEqual( uiSpinnerMock.mock.calls[ 0 ].arguments, [ 'Copying assets: 0% (processing file 1 of 2)' ] );

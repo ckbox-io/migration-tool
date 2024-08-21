@@ -6,69 +6,63 @@ import { Mock, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import CreateAdapterTask from '@src/tasks/CreateAdapterTask';
-import MigratorContext from '@src/MigratorContext';
-import { IAdapterFactory } from '@src/AdapterFactory';
 import { ITask } from '@src/Pipeline';
 import { ISourceStorageAdapter } from '@src/SourceStorageAdapter';
 import { ILogger } from '@src/Logger';
 import { IUI } from '@src/UI';
 
 import {
-	createAdapterFactoryFake,
+	createConfigManagerFake,
 	createLoggerFake,
 	createMigratorConfigFake,
 	createSourceStorageAdapterFake,
+	createSourceStorageManagerFake,
 	createUIFake
 } from '../utils/_fakes';
+import { IConfigManager } from '@src/ConfigManager';
+import { ISourceStorageManager } from '@src/SourceStorageManager';
 
 describe( 'CreateAdapterTask', () => {
 	describe( 'run()', () => {
-		let context: MigratorContext;
-		let adapterFactoryFake: IAdapterFactory;
 		let adapterFake: ISourceStorageAdapter;
 		let uiFake: IUI;
 		let loggerFake: ILogger;
 		let adapterConfig: Record<string, unknown>;
 		let abortController: AbortController;
+		let configManagerFake: IConfigManager;
+		let sourceStorageManagerFake: ISourceStorageManager;
 
 		beforeEach( () => {
-			context = new MigratorContext();
-			adapterFactoryFake = createAdapterFactoryFake();
 			adapterFake = createSourceStorageAdapterFake();
 			uiFake = createUIFake();
 			loggerFake = createLoggerFake();
 			adapterConfig = { foo: 'bar' };
 			abortController = new AbortController();
 
-			context.setInstance( createMigratorConfigFake( adapterConfig ) );
+			configManagerFake = createConfigManagerFake( createMigratorConfigFake( adapterConfig ) );
+			sourceStorageManagerFake = createSourceStorageManagerFake( adapterFake );
 		} );
 
 		it( 'should create an adapter instance', async t => {
-			const task: ITask<MigratorContext> = new CreateAdapterTask( adapterFactoryFake );
+			const task: ITask = new CreateAdapterTask( configManagerFake, sourceStorageManagerFake );
 
-			const createAdapterMock: Mock<Function> = t.mock.method( adapterFactoryFake, 'createAdapter', () => adapterFake );
+			const loadAdapterMock: Mock<Function> = t.mock.method( sourceStorageManagerFake, 'loadAdapter', () => {} );
 
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
-			assert.equal( createAdapterMock.mock.callCount(), 1 );
-			assert.deepEqual( createAdapterMock.mock.calls[ 0 ].arguments, [ 'FakeAdapter' ] );
-
-			assert( context.getInstance( 'Adapter' ) );
+			assert.equal( loadAdapterMock.mock.callCount(), 1 );
+			assert.deepEqual( loadAdapterMock.mock.calls[ 0 ].arguments, [ 'FakeAdapter' ] );
 		} );
 
 		it( 'should load the configuration', async t => {
-			const task: ITask<MigratorContext> = new CreateAdapterTask( adapterFactoryFake );
+			const task: ITask = new CreateAdapterTask( configManagerFake, sourceStorageManagerFake );
 
 			const loadConfigMock: Mock<Function> = t.mock.method( adapterFake, 'loadConfig' );
 
-			t.mock.method( adapterFactoryFake, 'createAdapter', () => adapterFake );
-
-			await task.run( context, uiFake, loggerFake, abortController );
+			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( loadConfigMock.mock.callCount(), 1 );
 			assert.deepEqual( loadConfigMock.mock.calls[ 0 ].arguments, [ adapterConfig ] );
-
-			assert( context.getInstance( 'Adapter' ) );
 		} );
 	} );
 } );
