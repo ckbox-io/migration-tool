@@ -2,7 +2,7 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { ISourceStorageAdapter, IMigrationPlan, ISourceCategory, ISourceFolder, ISourceAsset } from '@ckbox-migrator';
+import { ISourceStorageAdapter, IMigrationPlan, ISourceCategory, ISourceFolder, ISourceAsset, IGetAssetResult } from '@ckbox-migrator';
 
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
@@ -44,8 +44,11 @@ export default class CKFinderAdapter implements ISourceStorageAdapter {
 		};
 	}
 
-	public async getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream> {
-		return await this._fetchStream( downloadUrl );
+	public async getAsset( downloadUrl: string ): Promise<IGetAssetResult> {
+		return {
+			stream: await this._fetchStream( downloadUrl ),
+			responsiveImages: []
+		};
 	}
 
 	private async _getCategories(): Promise<ISourceCategory[]> {

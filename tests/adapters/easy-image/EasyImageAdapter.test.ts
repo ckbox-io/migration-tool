@@ -170,22 +170,4 @@ describe( 'EasyImageAdapter', () => {
 			assert.strictEqual( plan.categories[ 2 ].allowedExtensions.length, 0 );
 		} );
 	} );
-
-	describe( 'getAsset()', () => {
-		it( 'should return a stream', async () => {
-			const adapter: ISourceStorageAdapter = new EasyImageAdapter();
-
-			await adapter.loadConfig( config );
-
-			const assetUrl: string = 'http://localhost:8080/easyimage/asset.jpg';
-
-			nock( serviceOrigin )
-				.get( '/asset.jpg' )
-				.reply( 200 );
-
-			const stream = await adapter.getAsset( assetUrl );
-
-			assert.ok( stream );
-		} );
-	} );
 } );

@@ -5,7 +5,16 @@
 // This file exposes the public API needed to implement a custom source storage adapter.
 
 import { requireESM } from './ESMHelpers';
-import { ISourceStorageAdapter, IMigrationPlan, ISourceCategory, ISourceFolder, ISourceAsset } from './SourceStorageAdapter';
+import {
+	ISourceStorageAdapter,
+	IMigrationPlan,
+	ISourceCategory,
+	ISourceFolder,
+	ISourceAsset,
+	IGetAssetResult,
+	ISourceResponsiveImage
+} from './SourceStorageAdapter';
+import { ILogger } from './Logger';
 
 export {
 	ISourceStorageAdapter,
@@ -13,5 +22,8 @@ export {
 	ISourceCategory,
 	ISourceFolder,
 	ISourceAsset,
+	IGetAssetResult,
+	ISourceResponsiveImage,
+	ILogger,
 	requireESM
 };

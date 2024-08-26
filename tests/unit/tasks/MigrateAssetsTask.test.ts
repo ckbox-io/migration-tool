@@ -84,7 +84,7 @@ describe( 'MigrateAssetsTask', () => {
 			const getAssetMock: Mock<Function> = t.mock.method(
 				adapterFake,
 				'getAsset',
-				() => Promise.resolve( stream )
+				() => Promise.resolve( { stream, responsiveImages: [] } )
 			);
 
 			const sourceAssets: ISourceAsset[] = [
@@ -127,7 +127,7 @@ describe( 'MigrateAssetsTask', () => {
 			const getAssetMock: Mock<Function> = t.mock.method(
 				adapterFake,
 				'getAsset',
-				() => Promise.resolve( stream )
+				() => Promise.resolve( { stream, responsiveImages: [] } )
 			);
 
 			const sourceAssets: ISourceAsset[] = [
@@ -170,7 +170,7 @@ describe( 'MigrateAssetsTask', () => {
 			t.mock.method(
 				adapterFake,
 				'getAsset',
-				() => Promise.resolve( stream )
+				() => Promise.resolve( { stream, responsiveImages: [] } )
 			);
 
 			const uiSpinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner' );

@@ -32,7 +32,7 @@ describe( 'ConfirmMigrationTask', () => {
 			await task.run( uiFake, loggerFake, abortController );
 
 			assert.equal( promptMock.mock.callCount(), 1 );
-			assert.deepEqual( promptMock.mock.calls[ 0 ].arguments, [ 'Do you want to start the migration? (Y/n) ' ] );
+			assert.deepEqual( promptMock.mock.calls[ 0 ].arguments, [ 'Do you want to start the migration? (y/N) ' ] );
 		} );
 
 		it( 'should confirm migration', async t => {
