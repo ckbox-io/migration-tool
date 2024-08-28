@@ -86,7 +86,7 @@ export default class CKBoxClient implements ICKBoxClient {
 
 		if ( !response.ok ) {
 			throw new Error(
-				`Failed to create category in CKBox. Status code: ${ response.status }. ${ await response.text() }`
+				`Failed to create "${ category.name }" category in CKBox. Status code: ${ response.status }. ${ await response.text() }`
 			);
 		}
 

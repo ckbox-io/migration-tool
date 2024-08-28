@@ -24,7 +24,7 @@ export interface ISourceStorageAdapter {
 	/**
 	 * Downloads the asset from the source storage.
 	 */
-	getAsset( downloadUrl: string ): Promise<NodeJS.ReadableStream>;
+	getAsset( downloadUrl: string ): Promise<IGetAssetResult>;
 }
 
 export interface IMigrationPlan {
@@ -124,4 +124,27 @@ export interface ISourceAsset {
 	 * URL that should be replaced in the content.
 	 */
 	readonly downloadUrlToReplace: string;
+}
+
+export interface IGetAssetResult {
+
+	/**
+	 * Stream with the asset content.
+	 */
+	stream: NodeJS.ReadableStream;
+
+	responsiveImages: ISourceResponsiveImage[];
+}
+
+export interface ISourceResponsiveImage {
+
+	/**
+	 * Width of the image.
+	 */
+	width: number;
+
+	/**
+	 * URL to download the image.
+	 */
+	url: string;
 }

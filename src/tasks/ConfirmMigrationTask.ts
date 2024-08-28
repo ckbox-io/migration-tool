@@ -21,7 +21,7 @@ export default class ConfirmMigrationTask implements ITask {
 
 		;
 
-		const answer: string = await ui.prompt( 'Do you want to start the migration? (Y/n) ' );
+		const answer: string = await ui.prompt( 'Do you want to start the migration? (y/N) ' );
 
 		if ( answer.toLowerCase() !== 'y' ) {
 			abortController.abort();

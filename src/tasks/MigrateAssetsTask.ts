@@ -2,7 +2,7 @@
  Copyright (c), CKSource Holding sp. z o.o. All rights reserved.
  */
 
-import { ISourceStorageAdapter } from '../SourceStorageAdapter';
+import { IGetAssetResult, ISourceStorageAdapter } from '../SourceStorageAdapter';
 import { ICKBoxClient, ICKBoxLocation } from '../CKBoxClient';
 import { ITask } from '../Pipeline';
 import { ILogger } from '../Logger';
@@ -57,16 +57,16 @@ export default class MigrateAssetsTask implements ITask {
 
 				const location: ICKBoxLocation = this._getMigratedLocation( sourceCategoryId, sourceFolderId );
 
-				const stream = await adapter.getAsset( sourceAsset.downloadUrl );
+				const getAssetResult: IGetAssetResult = await adapter.getAsset( sourceAsset.downloadUrl );
 				const { id: migratedAssetId, url } = await client.uploadAsset( {
 					name: `${ sourceAsset.name }.${ sourceAsset.extension }`,
 					location,
-					stream
+					stream: getAssetResult.stream
 				} );
 
 				logger.info( 'Asset migrated.', { sourceAssetId: sourceAsset.id, migratedAssetId } );
 
-				this._urlMappingWriter.write( sourceAsset.downloadUrlToReplace, url );
+				this._urlMappingWriter.write( sourceAsset.downloadUrlToReplace, getAssetResult.responsiveImages, url );
 			} catch ( error ) {
 				logger.error( 'Asset migration failed.', { sourceAssetId: sourceAsset.id, error } );
 

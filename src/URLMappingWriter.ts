@@ -3,9 +3,10 @@
  */
 
 import fs, { WriteStream } from 'node:fs';
+import { ISourceResponsiveImage } from './SourceStorageAdapter';
 
 export interface IURLMappingWriter {
-	write( sourceUrl: string, targetUrl: string ): void;
+	write( sourceUrl: string, responsiveImages: ISourceResponsiveImage[], targetUrl: string ): void;
 }
 
 export default class URLMappingWriter implements IURLMappingWriter {
@@ -19,8 +20,14 @@ export default class URLMappingWriter implements IURLMappingWriter {
 		this._stream = fs.createWriteStream( this._filename, { flags: 'a' } );
 	}
 
-	public write( sourceUrl: string, targetUrl: string ): void {
-		this._stream.write( `${ sourceUrl }\t${ targetUrl }\n` );
+	public write( sourceUrl: string, responsiveImages: ISourceResponsiveImage[], targetUrlFile: string ): void {
+		const targetUrl: string = targetUrlFile.replace( /\/file$/, '' );
+
+		for ( const responsiveImage of responsiveImages ) {
+			this._stream.write( `${ responsiveImage.url }\t${ targetUrl }/images/${ responsiveImage.width }.webp\n` );
+		}
+
+		this._stream.write( `${ sourceUrl }\t${ targetUrlFile }\n` );
 	}
 
 	public get filename(): string {

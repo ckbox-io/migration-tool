@@ -29,6 +29,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "20.14.11",
     "@types/node-fetch": "2.6.11",
+    "@types/probe-image-size": "^7.2.5",
     "eslint": "8.57.0",
     "tsconfig-paths": "3.9.0",
     "typescript": "5.5.4",
@@ -39,8 +40,10 @@
     "class-transformer": "0.5.1",
     "class-validator": "0.14.1",
     "jsonwebtoken": "9.0.2",
+    "nock": "13.5.5",
     "node-fetch": "2.7.0",
     "ora": "8.0.1",
+    "probe-image-size": "^7.2.3",
     "reflect-metadata": "0.2.2"
   },
   "engines": {
