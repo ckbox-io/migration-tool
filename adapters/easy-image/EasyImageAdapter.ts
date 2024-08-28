@@ -3,7 +3,6 @@
  */
 
 import path, { ParsedPath } from 'node:path';
-import { Duplex, PassThrough } from 'node:stream';
 
 import { ISourceStorageAdapter, IMigrationPlan, ISourceAsset, IGetAssetResult, ISourceCategory } from '@ckbox-migrator';
 

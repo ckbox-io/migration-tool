@@ -23,7 +23,6 @@ export default class URLMappingWriter implements IURLMappingWriter {
 	public write( sourceUrl: string, responsiveImages: ISourceResponsiveImage[], targetUrlFile: string ): void {
 		const targetUrl: string = targetUrlFile.replace( /\/file$/, '' );
 
-		// Todo: Implement responsive images
 		for ( const responsiveImage of responsiveImages ) {
 			this._stream.write( `${ responsiveImage.url }\t${ targetUrl }/images/${ responsiveImage.width }.webp\n` );
 		}
