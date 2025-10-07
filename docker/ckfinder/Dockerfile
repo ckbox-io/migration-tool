@@ -1,4 +1,4 @@
-FROM openjdk:24-ea-7-jdk-oraclelinux9
+FROM openjdk:26-ea-7-jdk-oraclelinux9
 
 RUN microdnf install git -y
 RUN git clone https://github.com/ckfinder/ckfinder-docs-samples-java.git
