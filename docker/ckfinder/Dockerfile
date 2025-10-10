@@ -1,6 +1,6 @@
-FROM openjdk:26-ea-7-jdk-oraclelinux9
+FROM openjdk:26-ea-18-jdk-slim-trixie
 
-RUN microdnf install git -y
+RUN apt update && apt install -y git
 RUN git clone https://github.com/ckfinder/ckfinder-docs-samples-java.git
 
 WORKDIR /ckfinder-docs-samples-java
