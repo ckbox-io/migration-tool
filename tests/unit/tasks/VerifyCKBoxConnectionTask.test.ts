@@ -33,7 +33,7 @@ describe( 'VerifyCKBoxConnectionTask', () => {
 		it( 'should verify connection to CKBox', async t => {
 			const task: ITask = new VerifyCKBoxConnectionTask( ckboxClientManagerFake );
 
-			const verifyConnectionMock: Mock<Function> = t.mock.method( clientFake, 'verifyConnection' );
+			const verifyConnectionMock: Mock<() => void> = t.mock.method( clientFake, 'verifyConnection' );
 
 			await task.run( uiFake, loggerFake, abortController );
 

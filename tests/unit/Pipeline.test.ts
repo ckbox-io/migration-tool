@@ -90,7 +90,7 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a spinner while executing tasks', async t => {
-			const spinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner', () => {} );
+			const spinnerMock: Mock<( message: string ) => void> = t.mock.method( uiFake, 'spinner', () => {} );
 
 			const pipeline: IPipeline = new Pipeline( [ taskMock ], uiFake, loggerFake );
 
@@ -101,7 +101,7 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a success message after executing task', async t => {
-			const succeedMock: Mock<Function> = t.mock.method( uiFake, 'succeed', () => {} );
+			const succeedMock: Mock<() => void> = t.mock.method( uiFake, 'succeed', () => {} );
 
 			const pipeline: IPipeline = new Pipeline( [ taskMock ], uiFake, loggerFake );
 
@@ -112,7 +112,7 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should display a failure message if task fails', async t => {
-			const failMock: Mock<Function> = t.mock.method( uiFake, 'fail', () => {} );
+			const failMock: Mock<() => void> = t.mock.method( uiFake, 'fail', () => {} );
 
 			const pipeline: IPipeline = new Pipeline( [ failingTaskMock ], uiFake, loggerFake );
 
@@ -125,8 +125,9 @@ describe( 'Pipeline', () => {
 		} );
 
 		it( 'should stop executing tasks if one of them is aborted', async t => {
-			const infoMock: Mock<Function> = t.mock.method( uiFake, 'info', () => {} );
-			const runMock: Mock<Function> = t.mock.method( taskMock2, 'run', () => {} );
+			const infoMock: Mock<( message: string ) => void> = t.mock.method( uiFake, 'info', () => {} );
+			const runMock: Mock<( ui: IUI, logger: ILogger, abortController: AbortController ) => Promise<void>> =
+				t.mock.method( taskMock2, 'run', () => Promise.resolve() );
 
 			const pipeline: IPipeline = new Pipeline(
 				[ taskMock, abortedTaskMock, taskMock2 ],

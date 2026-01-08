@@ -70,7 +70,7 @@ describe( 'CKFinderAdapter', () => {
 		afterEach( async () => {
 			try {
 				await _finderApiCall( 'POST', { command: 'DeleteFolder', type: 'Files', currentFolder: '/Foo' } );
-			} catch ( error ) {
+			} catch {
 				// Ignore errors.
 			}
 		} );

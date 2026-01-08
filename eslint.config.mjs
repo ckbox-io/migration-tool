@@ -2,9 +2,13 @@
 
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import stylistic from '@stylistic/eslint-plugin';
 
 export default tseslint.config({
 	files: [ 'src/**/*.ts', 'tests/**/*.ts' ],
+	plugins: {
+		'@stylistic': stylistic
+	},
 	extends: [
 		eslint.configs.recommended,
 		...tseslint.configs.strict,
@@ -247,13 +251,6 @@ export default tseslint.config({
 			'error',
 			'after'
 		],
-		'@typescript-eslint/ban-types': [
-			'error',
-			{
-				types: { Function: false },
-				extendDefaults: true
-			}
-		],
 		'@typescript-eslint/consistent-type-assertions': [
 			'error',
 			{
@@ -270,7 +267,6 @@ export default tseslint.config({
 				}
 			}
 		],
-		'@typescript-eslint/member-delimiter-style': 'error',
 		'@typescript-eslint/no-confusing-non-null-assertion': 'error',
 		'@typescript-eslint/no-empty-function': 'off',
 		'@typescript-eslint/no-empty-interface': 'off',
@@ -278,7 +274,6 @@ export default tseslint.config({
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
 		'@typescript-eslint/no-non-null-assertion': 'off',
-		'@typescript-eslint/type-annotation-spacing': 'error',
 		'@typescript-eslint/unified-signatures': 'error',
 		'@typescript-eslint/no-unused-expressions': 'error',
 		'@typescript-eslint/no-use-before-define': [
@@ -291,8 +286,8 @@ export default tseslint.config({
 				ignoreTypeReferences: true
 			}
 		],
-		'@typescript-eslint/comma-dangle': [ 'error', 'never' ],
-		'@typescript-eslint/comma-spacing': [
+		'@stylistic/comma-dangle': [ 'error', 'never' ],
+		'@stylistic/comma-spacing': [
 			'error',
 			{
 				before: false,
@@ -300,14 +295,13 @@ export default tseslint.config({
 			}
 		],
 		'@typescript-eslint/consistent-generic-constructors': [ 'error', 'type-annotation' ],
-		'@typescript-eslint/func-call-spacing': [ 'error', 'never' ],
-		'@typescript-eslint/keyword-spacing': 'error',
+		'@stylistic/keyword-spacing': 'error',
 		'@typescript-eslint/no-array-constructor': 'error',
-		'@typescript-eslint/object-curly-spacing': [ 'error', 'always' ],
-		'@typescript-eslint/quotes': [ 'error', 'single' ],
-		'@typescript-eslint/semi': 'error',
-		'@typescript-eslint/space-before-blocks': [ 'error', 'always' ],
-		'@typescript-eslint/space-before-function-paren': [
+		'@stylistic/object-curly-spacing': [ 'error', 'always' ],
+		'@stylistic/quotes': [ 'error', 'single' ],
+		'@stylistic/semi': 'error',
+		'@stylistic/space-before-blocks': [ 'error', 'always' ],
+		'@stylistic/space-before-function-paren': [
 			'error',
 			{
 				anonymous: 'never',
@@ -315,7 +309,7 @@ export default tseslint.config({
 				asyncArrow: 'always'
 			}
 		],
-		'@typescript-eslint/space-infix-ops': 'error',
+		'@stylistic/space-infix-ops': 'error',
 		'@typescript-eslint/no-useless-constructor': 'error',
 		'object-property-newline': [
 			'error',

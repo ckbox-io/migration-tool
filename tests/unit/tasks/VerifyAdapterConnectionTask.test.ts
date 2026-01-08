@@ -34,7 +34,7 @@ describe( 'VerifyAdapterConnectionTask', () => {
 		it( 'should verify connection to source storage', async t => {
 			const task: ITask = new VerifyAdapterConnectionTask( sourceStorageManagerFake );
 
-			const verifyConnectionMock: Mock<Function> = t.mock.method( adapterFake, 'verifyConnection' );
+			const verifyConnectionMock: Mock<() => void> = t.mock.method( adapterFake, 'verifyConnection' );
 
 			await task.run( uiFake, loggerFake, abortController );
 
