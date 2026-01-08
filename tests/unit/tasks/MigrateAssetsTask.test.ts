@@ -7,8 +7,8 @@ import assert from 'node:assert/strict';
 
 import MigrateAssetsTask from '@src/tasks/MigrateAssetsTask';
 import { ITask } from '@src/Pipeline';
-import { IMigrationPlan, ISourceAsset, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
-import { ICKBoxClient } from '@src/CKBoxClient';
+import { IGetAssetResult, IMigrationPlan, ISourceAsset, ISourceStorageAdapter } from '@src/SourceStorageAdapter';
+import { ICKBoxAsset, ICKBoxClient, ICKBoxUploadResponse } from '@src/CKBoxClient';
 import { IUI } from '@src/UI';
 import { ILogger } from '@src/Logger';
 import MigrationPlan from '@src/MigrationPlan';
@@ -75,13 +75,13 @@ describe( 'MigrateAssetsTask', () => {
 		it( 'should migrate assets of a category', async t => {
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
-			const uploadAssetMock: Mock<Function> = t.mock.method(
+			const uploadAssetMock: Mock<( asset: ICKBoxAsset ) => Promise<ICKBoxUploadResponse>> = t.mock.method(
 				clientFake,
 				'uploadAsset',
-				() => Promise.resolve( 'migrated-asset-id-a-1' )
+				() => Promise.resolve( { id: 'migrated-asset-id-a-1', url: 'http://localhost:8080/asset/migrated-asset-id-a-1' } )
 			);
 
-			const getAssetMock: Mock<Function> = t.mock.method(
+			const getAssetMock: Mock<( downloadUrl: string ) => Promise<IGetAssetResult>> = t.mock.method(
 				adapterFake,
 				'getAsset',
 				() => Promise.resolve( { stream, responsiveImages: [] } )
@@ -118,13 +118,13 @@ describe( 'MigrateAssetsTask', () => {
 		it( 'should migrate assets of a folder', async t => {
 			const stream: NodeJS.ReadableStream = new PassThrough();
 
-			const uploadAssetMock: Mock<Function> = t.mock.method(
+			const uploadAssetMock: Mock<( asset: ICKBoxAsset ) => Promise<ICKBoxUploadResponse>> = t.mock.method(
 				clientFake,
 				'uploadAsset',
-				() => Promise.resolve( 'migrated-asset-id-a-1' )
+				() => Promise.resolve( { id: 'migrated-asset-id-a-1', url: 'http://localhost:8080/asset/migrated-asset-id-a-1' } )
 			);
 
-			const getAssetMock: Mock<Function> = t.mock.method(
+			const getAssetMock: Mock<( downloadUrl: string ) => Promise<IGetAssetResult>> = t.mock.method(
 				adapterFake,
 				'getAsset',
 				() => Promise.resolve( { stream, responsiveImages: [] } )
@@ -173,7 +173,7 @@ describe( 'MigrateAssetsTask', () => {
 				() => Promise.resolve( { stream, responsiveImages: [] } )
 			);
 
-			const uiSpinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner' );
+			const uiSpinnerMock: Mock<( message: string ) => void> = t.mock.method( uiFake, 'spinner' );
 
 			const sourceAssets: ISourceAsset[] = [
 				{

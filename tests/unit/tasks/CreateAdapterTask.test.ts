@@ -46,7 +46,8 @@ describe( 'CreateAdapterTask', () => {
 		it( 'should create an adapter instance', async t => {
 			const task: ITask = new CreateAdapterTask( configManagerFake, sourceStorageManagerFake );
 
-			const loadAdapterMock: Mock<Function> = t.mock.method( sourceStorageManagerFake, 'loadAdapter', () => {} );
+			const loadAdapterMock: Mock<( adapterName: string ) => Promise<void>> =
+				t.mock.method( sourceStorageManagerFake, 'loadAdapter', () => Promise.resolve() );
 
 			await task.run( uiFake, loggerFake, abortController );
 
@@ -57,7 +58,8 @@ describe( 'CreateAdapterTask', () => {
 		it( 'should load the configuration', async t => {
 			const task: ITask = new CreateAdapterTask( configManagerFake, sourceStorageManagerFake );
 
-			const loadConfigMock: Mock<Function> = t.mock.method( adapterFake, 'loadConfig' );
+			const loadConfigMock: Mock<( config: Record<string, unknown> ) => Promise<void>> =
+				t.mock.method( adapterFake, 'loadConfig', () => Promise.resolve() );
 
 			await task.run( uiFake, loggerFake, abortController );
 

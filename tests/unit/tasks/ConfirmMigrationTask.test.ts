@@ -27,7 +27,8 @@ describe( 'ConfirmMigrationTask', () => {
 		it( 'should print prompt', async t => {
 			const task: ITask = new ConfirmMigrationTask( false );
 
-			const promptMock: Mock<Function> = t.mock.method( uiFake, 'prompt', () => 'y' );
+			const promptMock: Mock<( message: string ) => Promise<string>> =
+				t.mock.method( uiFake, 'prompt', () => Promise.resolve( 'y' ) );
 
 			await task.run( uiFake, loggerFake, abortController );
 

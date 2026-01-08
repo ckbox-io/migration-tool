@@ -72,9 +72,10 @@ describe( 'MigrateCategoriesTask', () => {
 		} );
 
 		it( 'should create categories', async t => {
-			const createCategoryMock: Mock<Function> = t.mock.method( clientFake, 'createCategory', ( category: ICKBoxCategory ) => (
-				Promise.resolve( 'target-id-' + category.name )
-			) );
+			const createCategoryMock: Mock<( category: ICKBoxCategory ) => Promise<string>> =
+				t.mock.method( clientFake, 'createCategory', ( category: ICKBoxCategory ) => (
+					Promise.resolve( 'target-id-' + category.name )
+				) );
 
 			await task.run( uiFake, loggerFake, abortController );
 
@@ -99,7 +100,8 @@ describe( 'MigrateCategoriesTask', () => {
 				Promise.resolve( 'target-id-' + category.name )
 			) );
 
-			const addMigratedCategoryMock: Mock<Function> = t.mock.method( migratedCategoriesRepositoryFake, 'addMigratedCategory' );
+			const addMigratedCategoryMock: Mock<( sourceCategoryId: string, migratedCategoryId: string ) => void> =
+				t.mock.method( migratedCategoriesRepositoryFake, 'addMigratedCategory' );
 
 			await task.run( uiFake, loggerFake, abortController );
 
@@ -113,8 +115,8 @@ describe( 'MigrateCategoriesTask', () => {
 				Promise.resolve( 'target-id-' + category.name )
 			) );
 
-			const infoLogMock: Mock<Function> = t.mock.method( loggerFake, 'info' );
-			const spinnerMock: Mock<Function> = t.mock.method( uiFake, 'spinner' );
+			const infoLogMock: Mock<( message: string, data?: Record<string, unknown> ) => void> = t.mock.method( loggerFake, 'info' );
+			const spinnerMock: Mock<( message: string ) => void> = t.mock.method( uiFake, 'spinner' );
 
 			await task.run( uiFake, loggerFake, abortController );
 

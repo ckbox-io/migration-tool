@@ -28,7 +28,7 @@ describe( 'LoadConfigTask', () => {
 
 		it( 'should load the configuration', async t => {
 			const task: ITask = new LoadConfigTask( configManagerFake );
-			const loadConfigMock: Mock<Function> = t.mock.method( configManagerFake, 'loadConfig' );
+			const loadConfigMock: Mock<() => void> = t.mock.method( configManagerFake, 'loadConfig' );
 
 			await task.run( uiFake, loggerFake, abortController );
 

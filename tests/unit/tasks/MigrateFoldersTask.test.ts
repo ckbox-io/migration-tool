@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import MigrateFoldersTask from '@src/tasks/MigrateFoldersTask';
 import { ITask } from '@src/Pipeline';
 import { IMigrationPlan, ISourceFolder } from '@src/SourceStorageAdapter';
-import { ICKBoxClient } from '@src/CKBoxClient';
+import { ICKBoxClient, ICKBoxFolder } from '@src/CKBoxClient';
 import { IUI } from '@src/UI';
 import { ILogger } from '@src/Logger';
 
@@ -76,7 +76,8 @@ describe( 'MigrateFoldersTask', () => {
 
 			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
-			const createFolderMock: Mock<Function> = t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
+			const createFolderMock: Mock<( folder: ICKBoxFolder ) => Promise<string>> =
+				t.mock.method( clientFake, 'createFolder', () => Promise.resolve( 'migrated-folder-id' ) );
 
 			await task.run( uiFake, loggerFake, abortController );
 
@@ -112,7 +113,8 @@ describe( 'MigrateFoldersTask', () => {
 
 			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
-			const createFolderMock: Mock<Function> = t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
+			const createFolderMock: Mock<( folder: ICKBoxFolder ) => Promise<string>> =
+				t.mock.method( clientFake, 'createFolder', () => Promise.resolve( 'migrated-folder-id' ) );
 
 			await task.run( uiFake, loggerFake, abortController );
 
@@ -139,7 +141,7 @@ describe( 'MigrateFoldersTask', () => {
 			];
 
 			const migrationPlan: IMigrationPlan = _createMigrationPlan( sourceFolders );
-			const loggerInfoMock: Mock<Function> = t.mock.method( loggerFake, 'info' );
+			const loggerInfoMock: Mock<( message: string, data?: Record<string, unknown> ) => void> = t.mock.method( loggerFake, 'info' );
 
 			t.mock.method( migrationPlanManager, 'getMigrationPlan', () => migrationPlan );
 
@@ -168,7 +170,8 @@ describe( 'MigrateFoldersTask', () => {
 				}
 			];
 
-			const setMigratedFolderMock: Mock<Function> = t.mock.method( migratedFoldersRepositoryFake, 'addMigratedFolder' );
+			const setMigratedFolderMock: Mock<( categoryId: string, sourceFolderId: string, targetFolderId: string ) => void> =
+				t.mock.method( migratedFoldersRepositoryFake, 'addMigratedFolder' );
 
 			t.mock.method( clientFake, 'createFolder', () => 'migrated-folder-id' );
 
