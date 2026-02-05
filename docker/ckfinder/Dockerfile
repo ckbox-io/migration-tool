@@ -1,4 +1,4 @@
-FROM openjdk:26-ea-18-jdk-slim-trixie
+FROM openjdk:26-ea-33-jdk-slim-trixie
 
 RUN apt update && apt install -y git
 RUN git clone https://github.com/ckfinder/ckfinder-docs-samples-java.git
