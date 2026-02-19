@@ -24,30 +24,30 @@
   },
   "homepage": "https://github.com/ckbox-io/migration-tool#readme",
   "devDependencies": {
-    "@eslint/js": "9.7.0",
-    "@stylistic/eslint-plugin": "^5.6.1",
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.8.0",
     "@types/eslint__js": "8.42.3",
-    "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "20.14.11",
-    "@types/node-fetch": "2.6.11",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "22.19.11",
+    "@types/node-fetch": "^2.6.13",
     "@types/probe-image-size": "^7.2.5",
-    "eslint": "^9.0.0",
-    "tsconfig-paths": "3.9.0",
-    "typescript": "5.5.4",
-    "typescript-eslint": "^8.0.0"
+    "eslint": "^10.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
   },
   "dependencies": {
-    "chalk": "4.1.2",
-    "class-transformer": "0.5.1",
-    "class-validator": "0.14.1",
-    "jsonwebtoken": "9.0.2",
-    "nock": "13.5.5",
-    "node-fetch": "2.7.0",
-    "ora": "8.0.1",
+    "chalk": "^5.6.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "jsonwebtoken": "^9.0.3",
+    "nock": "^14.0.11",
+    "node-fetch": "^3.3.2",
+    "ora": "^9.3.0",
     "probe-image-size": "^7.2.3",
-    "reflect-metadata": "0.2.2"
+    "reflect-metadata": "^0.2.2"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
