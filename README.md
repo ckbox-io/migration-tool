@@ -4,7 +4,7 @@ The CKBox Migration Tool is a command-line interface tool designed to transfer f
 
 # Requirements
 
-* NodeJS 18.x or later
+* NodeJS 20.x or later
 
 # Installation
 
